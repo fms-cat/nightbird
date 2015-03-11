@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=0.5,minimum-scale=0.5,maximum-scale=2.0,user-scalable=yes">
+		<title></title>
+		<style>
+			*
+			{
+				margin : 0;
+				padding : 0;
+			}
+
+			.board
+			{
+				width : 100%;
+				height : 100%;
+			}
+		</style>
+	</head>
+	<body>
+		<script src="ShaderBoard.js"></script>
+		<script>
+
+			var sub = window.open( 'about:blank', 'sub', 'menubar=no' );
+
+			var board = new ShaderBoard();
+			board.canvas.className = 'board';
+			document.body.appendChild( board.canvas );
+
+			var defaultImg = new Image();
+			defaultImg.onload = function(){
+				board.setTexture( defaultImg );
+			};
+	    defaultImg.src = 'lenna.png';
+
+			var thumbs = [];
+
+			var input = document.createElement( 'input' );
+			input.type = 'file';
+			input.multiple = true;
+			input.onchange = function( _e ){
+
+				for( var i=0, file; file=_e.target.files[i]; i++ ){
+					var ext = '';
+					if( /\.(.+)$/.test( file.name ) ){
+						ext = /\.(.+)$/.exec( file.name )[1];
+					}else{
+						console.error( file.name+' has no extension' );
+					}
+					if( ext = 'glsl' ){
+						board.loadGlsl( file, function( _file ){
+							var thumb = new ShaderBoard();
+							thumb.setResolution( 128, 128 );
+							thumb.setTime( 10 );
+							thumb.setTexture( defaultImg );
+							thumbs.push( thumb );
+							sub.document.body.appendChild( thumb.canvas );
+
+							thumb.canvas.onclick = function(){
+								board.setProgram( _file.name );
+							};
+							thumb.loadGlsl( _file, function( _file ){
+								thumb.setProgram( _file.name );
+								thumb.draw();
+							} );
+						} );
+					}else{
+						console.error( file.name+' is unsupported extension' );
+					}
+				}
+
+			};
+
+			sub.document.body.appendChild( input );
+
+			function loop(){
+				board.draw();
+				requestAnimationFrame( loop );
+			}
+			requestAnimationFrame( loop );
+
+		</script>
+	</body>
+</html>
