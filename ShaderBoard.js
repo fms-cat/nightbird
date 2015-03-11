@@ -42,7 +42,6 @@ var ShaderBoard = function(){
 	gl.bindTexture( gl.TEXTURE_2D, null );
 
 	this.framebuffer = gl.createFramebuffer();
-  gl.bindFramebuffer( gl.FRAMEBUFFER, this.framebuffer );
 
 };
 
