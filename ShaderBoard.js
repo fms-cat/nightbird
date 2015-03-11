@@ -34,18 +34,15 @@ var ShaderBoard = function(){
 	this.begint = +new Date();
 	this.parameter = [0,0,0,0];
 
-	this.framebuffer = gl.createFramebuffer();
-  gl.bindFramebuffer( gl.FRAMEBUFFER, this.framebuffer );
-
-	this.framebufferTexture = gl.createTexture();
-  gl.bindTexture( gl.TEXTURE_2D, this.framebufferTexture );
-  gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, this.canvas.width, this.canvas.width, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
+	gl.activeTexture( gl.TEXTURE0 );
+	this.texture = gl.createTexture();
+	gl.bindTexture( gl.TEXTURE_2D, this.texture );
   gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
   gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
-  gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.framebufferTexture, 0 );
+	gl.bindTexture( gl.TEXTURE_2D, null );
 
-  gl.bindTexture( gl.TEXTURE_2D, null );
-  gl.bindFramebuffer( gl.FRAMEBUFFER, null );
+	this.framebuffer = gl.createFramebuffer();
+  gl.bindFramebuffer( gl.FRAMEBUFFER, this.framebuffer );
 
 };
 
@@ -119,13 +116,23 @@ ShaderBoard.prototype.setTexture = function( _img ){
 
 	var gl = this.gl;
 
-	gl.activeTexture( gl.TEXTURE0 );
-
-	this.texture = gl.createTexture();
-
 	gl.bindTexture( gl.TEXTURE_2D, this.texture );
   gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _img );
   gl.bindTexture( gl.TEXTURE_2D, null );
+
+};
+
+ShaderBoard.prototype.setFramebufferTexture = function(){
+
+	gl.bindFramebuffer( gl.FRAMEBUFFER, this.framebuffer );
+	gl.bindTexture( gl.TEXTURE_2D, this.texture );
+
+  gl.bindTexture( gl.TEXTURE_2D, this.texture );
+  gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, this.canvas.width, this.canvas.width, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
+  gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0 );
+
+  gl.bindTexture( gl.TEXTURE_2D, null );
+  gl.bindFramebuffer( gl.FRAMEBUFFER, null );
 
 };
 
@@ -159,7 +166,7 @@ ShaderBoard.prototype.drawFramebuffer = function(){
 
 	var gl = this.gl;
 
-	gl.bindFramebuffer( gl.FRAMEBUFFER, this.frameBuffer );
+	gl.bindFramebuffer( gl.FRAMEBUFFER, this.framebuffer );
 	this.draw();
 	gl.bindFramebuffer( gl.FRAMEBUFFER, null );
 
