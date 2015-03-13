@@ -1,10 +1,10 @@
 // reference : http://www.tohoho-web.com/wwwgif.htm
 
-var GifBoard = function( _file ){
+var GifNode = function( _file ){
 
 	this.canvas = document.createElement( 'canvas' );
-	this.canvas.width = 512;
-	this.canvas.height = 512;
+	this.canvas.width = 128;
+	this.canvas.height = 128;
 	this.context = this.canvas.getContext( '2d' );
 
 	this.frames = [];
@@ -93,24 +93,30 @@ var GifBoard = function( _file ){
 
 	reader.readAsArrayBuffer( _file );
 
+	this.beat = 4;
+
 };
 
-GifBoard.prototype.setSize = function( _w, _h ){
+GifNode.prototype.setBeat = function( _b ){
+
+	this.beat = _b;
+
+};
+
+GifNode.prototype.setSize = function( _w, _h ){
 
 	this.canvas.width = _w;
 	this.canvas.height = _h;
 
-}
+};
 
-GifBoard.prototype.draw = function( _time ){
+GifNode.prototype.draw = function(){
 
-	var frame = 0;
-	if( _time == 0 ){ frame = 0; }
-	else if( _time < 1 ){ frame = ~~( _time*this.length ); }
-	else{ frame = ~~( _time%this.length ); }
+	var frame = ~~( ( time*bpm/this.beat )%this.length );
+
 	if( this.frames[ frame ] ){
-		var x = Math.max( (this.width-this.height)/2, 0 );
-		var y = Math.max( (this.height-this.width)/2, 0 );
+		var x = Math.max( ( this.width-this.height )/2, 0 );
+		var y = Math.max( ( this.height-this.width )/2, 0 );
 		var s = Math.min( this.width, this.height );
 		this.context.drawImage( this.frames[ frame ], x, y, s, s, 0, 0, this.canvas.width, this.canvas.height );
 	}

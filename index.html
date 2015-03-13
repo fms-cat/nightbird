@@ -20,24 +20,17 @@
 		</style>
 	</head>
 	<body>
-		<script src="ShaderBoard.js"></script>
-		<script src="libgif.js"></script>
-		<script src="GifBoard.js"></script>
+		<script src="js/ShaderNode.js"></script>
+		<script src="js/GifNode.js"></script>
 		<script>
 
 			var sub = window.open( 'about:blank', 'sub', 'menubar=no' );
 
-			var board = new ShaderBoard();
-			board.canvas.className = 'board';
-			document.body.appendChild( board.canvas );
+			var begint = +new Date();
+			var time = 0;
+			var bpm = 120;
 
-			var defaultImage = new Image();
-			defaultImage.src = 'lenna.gif';
-
-			var gifs = {};
-			var selectedGif = null;
-
-			var thumbs = [];
+			var nodes = [];
 
 			var input = document.createElement( 'input' );
 			input.type = 'file';
@@ -55,32 +48,22 @@
 
 					if( ext == 'glsl' ){
 
-						board.loadGlsl( file, function( _file ){
-							var thumb = new ShaderBoard();
-							thumb.setResolution( 128, 128 );
-							thumb.setTime( 10 );
-							thumb.setTexture( defaultImage );
-							thumbs.push( thumb );
-							sub.document.body.appendChild( thumb.canvas );
-
-							thumb.canvas.onclick = function(){
-								board.setProgram( _file.name );
+						var node = new ShaderNode( file );
+						nodes.push( node );
+						document.body.appendChild( node.canvas );
+						(function( _file ){
+							node.canvas.onclick = function(){
+								selectedShader = _file.name;
 							};
-							thumb.loadGlsl( _file, function( _file ){
-								thumb.setProgram( _file.name );
-								thumb.draw();
-							} );
-						} );
+						}( file ));
 
 					}else if( ext == 'gif' ){
 
-						gifs[ file.name ] = new GifBoard( file );
-						var thumb = new GifBoard( file );
-						thumb.setSize( 128, 128 );
-						thumbs.push( thumb );
-						sub.document.body.appendChild( thumb.canvas );
+						var node = new GifNode( file );
+						nodes.push( node );
+						document.body.appendChild( node.canvas );
 						(function( _file ){
-							thumb.canvas.onclick = function(){
+							node.canvas.onclick = function(){
 								selectedGif = _file.name;
 							};
 						}( file ));
@@ -94,19 +77,15 @@
 
 			sub.document.body.appendChild( input );
 
-			var t=0;
 			function loop(){
-				for( var thumb of thumbs ){
-					thumb.draw(0);
+
+				time = ( +new Date() - begint )*1e-3;
+
+				for( var node of nodes ){
+					node.draw();
 				}
 
-				if( selectedGif ){
-					board.setTexture( gifs[ selectedGif ].canvas );
-					gifs[ selectedGif ].draw( ((t*.01)%1) );
-				}
-				board.draw();
 				requestAnimationFrame( loop );
-				t++;
 			}
 			requestAnimationFrame( loop );
 

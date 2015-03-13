@@ -1,20 +1,17 @@
 shaderBoardVert = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
 shaderBoardFrag = '#ifdef GL_ES\nprecision mediump float;\n#endif\nuniform float time;uniform vec2 resolution;uniform sampler2D texture;void main(){gl_FragColor=texture2D(texture, vec2( gl_FragCoord.x/resolution.x, 1.-gl_FragCoord.y/resolution.y ) );}';
 
-var ShaderBoard = function(){
+var ShaderNode = function( _file ){
 
 	this.canvas = document.createElement( 'canvas' );
-	this.canvas.width = 512;
-	this.canvas.height = 512;
+	this.canvas.width = 128;
+	this.canvas.height = 128;
 
 	this.gl = this.canvas.getContext( 'webgl' );
 
 	var gl = this.gl;
 
-	this.programs = {};
-	this.createProgram( shaderBoardFrag, 'default' );
-
-	this.program = this.programs.default;
+	this.setProgram( shaderBoardFrag );
 
 	this.vbo = (function(){
 		var vbo = gl.createBuffer();
@@ -31,9 +28,6 @@ var ShaderBoard = function(){
 	gl.enableVertexAttribArray( loc );
 	gl.vertexAttribPointer( loc, 2, gl.FLOAT, false, 0, 0 );
 
-	this.begint = +new Date();
-	this.parameter = 0;
-
 	gl.activeTexture( gl.TEXTURE0 );
 	this.texture = gl.createTexture();
 	gl.bindTexture( gl.TEXTURE_2D, this.texture );
@@ -41,9 +35,13 @@ var ShaderBoard = function(){
   gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
 	gl.bindTexture( gl.TEXTURE_2D, null );
 
+	this.loadGlsl( _file );
+
+	this.parameter = 0;
+
 };
 
-ShaderBoard.prototype.createProgram = function( _frag, _name ){
+ShaderNode.prototype.setProgram = function( _frag, _name ){
 
 	var gl = this.gl;
 
@@ -62,45 +60,33 @@ ShaderBoard.prototype.createProgram = function( _frag, _name ){
 	gl.attachShader( p, f );
 	gl.linkProgram( p );
 	if( gl.getProgramParameter( p, gl.LINK_STATUS ) ){
-		this.programs[ _name ] = p;
+		this.program = p;
 	}else{
 		alert( gl.getProgramInfoLog( p ) );
 	}
 
 };
 
-ShaderBoard.prototype.setProgram = function( _name ){
-
-	this.program = this.programs[ _name ];
-
-};
-
-ShaderBoard.prototype.setTime = function( _t ){
+ShaderNode.prototype.setTime = function( _t ){
 
 	if( isNaN( _t ) ){ _t = 0; }
 	this.begint = +new Date() - _t*1000;
 
 };
 
-ShaderBoard.prototype.loadGlsl = function( _file, _onLoad ){
+ShaderNode.prototype.loadGlsl = function( _file ){
 
 	var shaderBoard = this;
 
 	var reader = new FileReader();
-	var name = _file.name;
-
 	reader.onload = function(){
-
-		shaderBoard.createProgram( reader.result, name );
-		if( typeof(_onLoad) == 'function' ){ _onLoad( _file ); }
-
+		shaderBoard.setProgram( reader.result, name );
 	};
-
 	reader.readAsText( _file );
 
 };
 
-ShaderBoard.prototype.setResolution = function( _w, _h ){
+ShaderNode.prototype.setResolution = function( _w, _h ){
 
 	this.canvas.width = _w;
 	this.canvas.height = _h;
@@ -110,7 +96,7 @@ ShaderBoard.prototype.setResolution = function( _w, _h ){
 
 };
 
-ShaderBoard.prototype.setTexture = function( _img ){
+ShaderNode.prototype.setTexture = function( _img ){
 
 	var gl = this.gl;
 
@@ -120,7 +106,7 @@ ShaderBoard.prototype.setTexture = function( _img ){
 
 };
 
-ShaderBoard.prototype.draw = function(){
+ShaderNode.prototype.draw = function(){
 
 	var gl = this.gl;
 
@@ -130,7 +116,7 @@ ShaderBoard.prototype.draw = function(){
 
 	gl.useProgram( this.program );
 
-	gl.uniform1f( gl.getUniformLocation( this.program, 'time' ), ( +new Date() - this.begint)*1E-3 );
+	gl.uniform1f( gl.getUniformLocation( this.program, 'time' ), time );
 	gl.uniform2fv( gl.getUniformLocation( this.program, 'resolution' ), [ this.canvas.width, this.canvas.height ] );
 	gl.uniform1f( gl.getUniformLocation( this.program, 'parameter' ), this.parameter );
 
