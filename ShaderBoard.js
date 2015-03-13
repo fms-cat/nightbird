@@ -32,7 +32,7 @@ var ShaderBoard = function(){
 	gl.vertexAttribPointer( loc, 2, gl.FLOAT, false, 0, 0 );
 
 	this.begint = +new Date();
-	this.parameter = [0,0,0,0];
+	this.parameter = 0;
 
 	gl.activeTexture( gl.TEXTURE0 );
 	this.texture = gl.createTexture();
@@ -40,8 +40,6 @@ var ShaderBoard = function(){
   gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
   gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
 	gl.bindTexture( gl.TEXTURE_2D, null );
-
-	this.framebuffer = gl.createFramebuffer();
 
 };
 
@@ -90,7 +88,6 @@ ShaderBoard.prototype.loadGlsl = function( _file, _onLoad ){
 
 	var reader = new FileReader();
 	var name = _file.name;
-	reader.readAsText( _file );
 
 	reader.onload = function(){
 
@@ -98,6 +95,8 @@ ShaderBoard.prototype.loadGlsl = function( _file, _onLoad ){
 		if( typeof(_onLoad) == 'function' ){ _onLoad( _file ); }
 
 	};
+
+	reader.readAsText( _file );
 
 };
 
@@ -121,33 +120,19 @@ ShaderBoard.prototype.setTexture = function( _img ){
 
 };
 
-ShaderBoard.prototype.setFramebufferTexture = function(){
-
-	gl.bindFramebuffer( gl.FRAMEBUFFER, this.framebuffer );
-	gl.bindTexture( gl.TEXTURE_2D, this.texture );
-
-  gl.bindTexture( gl.TEXTURE_2D, this.texture );
-  gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, this.canvas.width, this.canvas.width, 0, gl.RGBA, gl.UNSIGNED_BYTE, null );
-  gl.framebufferTexture2D( gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0 );
-
-  gl.bindTexture( gl.TEXTURE_2D, null );
-  gl.bindFramebuffer( gl.FRAMEBUFFER, null );
-
-};
-
 ShaderBoard.prototype.draw = function(){
 
 	var gl = this.gl;
 
-	gl.clearColor( 0., 0., 0., 1. );
-  gl.clearDepth( 1. );
+	gl.clearColor( 0, 0, 0, 1 );
+  gl.clearDepth( 1 );
   gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
 	gl.useProgram( this.program );
 
 	gl.uniform1f( gl.getUniformLocation( this.program, 'time' ), ( +new Date() - this.begint)*1E-3 );
 	gl.uniform2fv( gl.getUniformLocation( this.program, 'resolution' ), [ this.canvas.width, this.canvas.height ] );
-	gl.uniform4fv( gl.getUniformLocation( this.program, 'parameter' ), this.parameter );
+	gl.uniform1f( gl.getUniformLocation( this.program, 'parameter' ), this.parameter );
 
 	gl.activeTexture( gl.TEXTURE0 );
   gl.bindTexture( gl.TEXTURE_2D, this.texture );
@@ -158,15 +143,5 @@ ShaderBoard.prototype.draw = function(){
 	gl.drawArrays( gl.TRIANGLE_STRIP, 0, 4 );
 
   gl.flush();
-
-};
-
-ShaderBoard.prototype.drawFramebuffer = function(){
-
-	var gl = this.gl;
-
-	gl.bindFramebuffer( gl.FRAMEBUFFER, this.framebuffer );
-	this.draw();
-	gl.bindFramebuffer( gl.FRAMEBUFFER, null );
 
 };

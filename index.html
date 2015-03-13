@@ -21,6 +21,8 @@
 	</head>
 	<body>
 		<script src="ShaderBoard.js"></script>
+		<script src="libgif.js"></script>
+		<script src="GifBoard.js"></script>
 		<script>
 
 			var sub = window.open( 'about:blank', 'sub', 'menubar=no' );
@@ -29,11 +31,11 @@
 			board.canvas.className = 'board';
 			document.body.appendChild( board.canvas );
 
-			var defaultImg = new Image();
-			defaultImg.onload = function(){
-				board.setTexture( defaultImg );
-			};
-	    defaultImg.src = 'lenna.png';
+			var defaultImage = new Image();
+			defaultImage.src = 'lenna.gif';
+
+			var gifs = {};
+			var selectedGif = null;
 
 			var thumbs = [];
 
@@ -43,18 +45,21 @@
 			input.onchange = function( _e ){
 
 				for( var i=0, file; file=_e.target.files[i]; i++ ){
+
 					var ext = '';
-					if( /\.(.+)$/.test( file.name ) ){
-						ext = /\.(.+)$/.exec( file.name )[1];
+					if( /\.([^.]+)$/.test( file.name ) ){
+						ext = /\.([^.]+)$/.exec( file.name )[1];
 					}else{
 						console.error( file.name+' has no extension' );
 					}
-					if( ext = 'glsl' ){
+
+					if( ext == 'glsl' ){
+
 						board.loadGlsl( file, function( _file ){
 							var thumb = new ShaderBoard();
 							thumb.setResolution( 128, 128 );
 							thumb.setTime( 10 );
-							thumb.setTexture( defaultImg );
+							thumb.setTexture( defaultImage );
 							thumbs.push( thumb );
 							sub.document.body.appendChild( thumb.canvas );
 
@@ -66,6 +71,20 @@
 								thumb.draw();
 							} );
 						} );
+
+					}else if( ext == 'gif' ){
+
+						gifs[ file.name ] = new GifBoard( file );
+						var thumb = new GifBoard( file );
+						thumb.setSize( 128, 128 );
+						thumbs.push( thumb );
+						sub.document.body.appendChild( thumb.canvas );
+						(function( _file ){
+							thumb.canvas.onclick = function(){
+								selectedGif = _file.name;
+							};
+						}( file ));
+
 					}else{
 						console.error( file.name+' is unsupported extension' );
 					}
@@ -75,9 +94,19 @@
 
 			sub.document.body.appendChild( input );
 
+			var t=0;
 			function loop(){
+				for( var thumb of thumbs ){
+					thumb.draw(0);
+				}
+
+				if( selectedGif ){
+					board.setTexture( gifs[ selectedGif ].canvas );
+					gifs[ selectedGif ].draw( ((t*.01)%1) );
+				}
 				board.draw();
 				requestAnimationFrame( loop );
+				t++;
 			}
 			requestAnimationFrame( loop );
 
