@@ -6,7 +6,7 @@ precision mediump float;
 
 uniform float time;
 uniform vec2 resolution;
-uniform sampler2D texture;
+uniform sampler2D texture0;
 
 #define r resolution
 #define t time
@@ -24,7 +24,7 @@ void main()
 {
     vec2 uv = vec2(floor(gl_FragCoord.x/8./zoom)*8.*zoom,floor(gl_FragCoord.y/12./zoom)*12.*zoom)/r;
     ivec2 pos = ivec2(mod(gl_FragCoord.x/zoom,8.),mod(gl_FragCoord.y/zoom,12.));
-    vec4 tex = texture2D(texture,vec2(uv.x,1.-uv.y));
+    vec4 tex = texture2D(texture0,vec2(uv.x,1.-uv.y));
     float cha = 0.;
 
     {
