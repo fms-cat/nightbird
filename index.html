@@ -20,70 +20,21 @@
 		</style>
 	</head>
 	<body>
+		<script src="js/Nightbird.js"></script>
+		<script src="js/Node.js"></script>
 		<script src="js/ShaderNode.js"></script>
 		<script src="js/GifNode.js"></script>
 		<script>
 
-			var sub = window.open( 'about:blank', 'sub', 'menubar=no' );
-
-			var begint = +new Date();
-			var time = 0;
-			var bpm = 120;
-
-			var nodes = [];
-
-			var input = document.createElement( 'input' );
-			input.type = 'file';
-			input.multiple = true;
-			input.onchange = function( _e ){
-
-				for( var i=0, file; file=_e.target.files[i]; i++ ){
-
-					var ext = '';
-					if( /\.([^.]+)$/.test( file.name ) ){
-						ext = /\.([^.]+)$/.exec( file.name )[1];
-					}else{
-						console.error( file.name+' has no extension' );
-					}
-
-					if( ext == 'glsl' ){
-
-						var node = new ShaderNode( file );
-						nodes.push( node );
-						document.body.appendChild( node.canvas );
-						(function( _file ){
-							node.canvas.onclick = function(){
-								selectedShader = _file.name;
-							};
-						}( file ));
-
-					}else if( ext == 'gif' ){
-
-						var node = new GifNode( file );
-						nodes.push( node );
-						document.body.appendChild( node.canvas );
-						(function( _file ){
-							node.canvas.onclick = function(){
-								selectedGif = _file.name;
-							};
-						}( file ));
-
-					}else{
-						console.error( file.name+' is unsupported extension' );
-					}
-				}
-
-			};
-
-			sub.document.body.appendChild( input );
+			var nightbird = new Nightbird();
+			nightbird.setModularSize( 512, 512 );
+			document.body.appendChild( nightbird.canvas );
+			document.body.appendChild( nightbird.modular );
+			document.body.appendChild( nightbird.input );
 
 			function loop(){
 
-				time = ( +new Date() - begint )*1e-3;
-
-				for( var node of nodes ){
-					node.draw();
-				}
+				nightbird.draw();
 
 				requestAnimationFrame( loop );
 			}

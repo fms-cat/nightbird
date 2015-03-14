@@ -1,19 +1,18 @@
-shaderBoardVert = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
-shaderBoardFrag = '#ifdef GL_ES\nprecision mediump float;\n#endif\nuniform float time;uniform vec2 resolution;uniform sampler2D texture;void main(){gl_FragColor=texture2D(texture, vec2( gl_FragCoord.x/resolution.x, 1.-gl_FragCoord.y/resolution.y ) );}';
+Nightbird.vert = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+Nightbird.frag = '#ifdef GL_ES\nprecision mediump float;\n#endif\nuniform float time;uniform vec2 resolution;uniform sampler2D texture;void main(){gl_FragColor=texture2D(texture, vec2( gl_FragCoord.x/resolution.x, 1.-gl_FragCoord.y/resolution.y ) );}';
 
-var ShaderNode = function( _file ){
+Nightbird.ShaderNode = function( _nightbird, _file ){
 
-	this.canvas = document.createElement( 'canvas' );
-	this.canvas.width = 128;
-	this.canvas.height = 128;
+	var shaderNode = this;
 
-	this.gl = this.canvas.getContext( 'webgl' );
+	Nightbird.Node.call( shaderNode, _nightbird, _file );
 
-	var gl = this.gl;
+	shaderNode.gl = shaderNode.canvas.getContext( 'webgl' );
+	var gl = shaderNode.gl;
 
-	this.setProgram( shaderBoardFrag );
+	shaderNode.setProgram( Nightbird.frag );
 
-	this.vbo = (function(){
+	shaderNode.vbo = (function(){
 		var vbo = gl.createBuffer();
 
 		gl.bindBuffer( gl.ARRAY_BUFFER, vbo );
@@ -22,31 +21,35 @@ var ShaderNode = function( _file ){
 
 		return vbo;
 	}());
-	gl.bindBuffer( gl.ARRAY_BUFFER, this.vbo );
+	gl.bindBuffer( gl.ARRAY_BUFFER, shaderNode.vbo );
 
-	var loc = gl.getAttribLocation( this.program, 'p' );
+	var loc = gl.getAttribLocation( shaderNode.program, 'p' );
 	gl.enableVertexAttribArray( loc );
 	gl.vertexAttribPointer( loc, 2, gl.FLOAT, false, 0, 0 );
 
 	gl.activeTexture( gl.TEXTURE0 );
-	this.texture = gl.createTexture();
-	gl.bindTexture( gl.TEXTURE_2D, this.texture );
+	shaderNode.texture = gl.createTexture();
+	gl.bindTexture( gl.TEXTURE_2D, shaderNode.texture );
   gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
   gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
 	gl.bindTexture( gl.TEXTURE_2D, null );
 
-	this.loadGlsl( _file );
+	shaderNode.loadGlsl( _file );
 
-	this.parameter = 0;
+	shaderNode.parameter = 0;
 
 };
 
-ShaderNode.prototype.setProgram = function( _frag, _name ){
+Nightbird.ShaderNode.prototype = Object.create( Nightbird.Node.prototype );
+Nightbird.ShaderNode.prototype.constructor = Nightbird.ShaderNode;
 
-	var gl = this.gl;
+Nightbird.ShaderNode.prototype.setProgram = function( _frag, _name ){
+
+	var shaderNode = this;
+	var gl = shaderNode.gl;
 
 	var v = gl.createShader( gl.VERTEX_SHADER );
-	gl.shaderSource( v, shaderBoardVert );
+	gl.shaderSource( v, Nightbird.vert );
 	gl.compileShader( v );
 	if( !gl.getShaderParameter( v, gl.COMPILE_STATUS ) ){ console.error( gl.getShaderInfoLog( v ) ); return; }
 
@@ -60,74 +63,80 @@ ShaderNode.prototype.setProgram = function( _frag, _name ){
 	gl.attachShader( p, f );
 	gl.linkProgram( p );
 	if( gl.getProgramParameter( p, gl.LINK_STATUS ) ){
-		this.program = p;
+		shaderNode.program = p;
 	}else{
 		alert( gl.getProgramInfoLog( p ) );
 	}
 
 };
 
-ShaderNode.prototype.setTime = function( _t ){
+Nightbird.ShaderNode.prototype.setTime = function( _t ){
+
+	var shaderNode = this;
 
 	if( isNaN( _t ) ){ _t = 0; }
-	this.begint = +new Date() - _t*1000;
+	shaderNode.begint = +new Date() - _t*1000;
 
 };
 
-ShaderNode.prototype.loadGlsl = function( _file ){
+Nightbird.ShaderNode.prototype.loadGlsl = function( _file ){
 
-	var shaderBoard = this;
+	var shaderNode = this;
 
 	var reader = new FileReader();
 	reader.onload = function(){
-		shaderBoard.setProgram( reader.result, name );
+		shaderNode.setProgram( reader.result, name );
 	};
 	reader.readAsText( _file );
 
 };
 
-ShaderNode.prototype.setResolution = function( _w, _h ){
+Nightbird.ShaderNode.prototype.setSize = function( _w, _h ){
 
-	this.canvas.width = _w;
-	this.canvas.height = _h;
+	var shaderNode = this;
 
-	var gl = this.gl;
-	gl.viewport( 0, 0, _w, _h );
+	Node.prototype.setSize.call( shaderNode, _hightbird, _file );
+
+	shaderNode.gl.viewport( 0, 0, _w, _h );
 
 };
 
-ShaderNode.prototype.setTexture = function( _img ){
+Nightbird.ShaderNode.prototype.setTexture = function( _img ){
 
-	var gl = this.gl;
+	var shaderNode = this;
+	var gl = shaderNode.gl;
 
-	gl.bindTexture( gl.TEXTURE_2D, this.texture );
+	gl.bindTexture( gl.TEXTURE_2D, shaderNode.texture );
   gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _img );
   gl.bindTexture( gl.TEXTURE_2D, null );
 
 };
 
-ShaderNode.prototype.draw = function(){
+Nightbird.ShaderNode.prototype.draw = function(){
 
-	var gl = this.gl;
+	var shaderNode = this;
+	var gl = shaderNode.gl;
 
 	gl.clearColor( 0, 0, 0, 1 );
   gl.clearDepth( 1 );
   gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 
-	gl.useProgram( this.program );
+	gl.useProgram( shaderNode.program );
 
-	gl.uniform1f( gl.getUniformLocation( this.program, 'time' ), time );
-	gl.uniform2fv( gl.getUniformLocation( this.program, 'resolution' ), [ this.canvas.width, this.canvas.height ] );
-	gl.uniform1f( gl.getUniformLocation( this.program, 'parameter' ), this.parameter );
+	gl.uniform1f( gl.getUniformLocation( shaderNode.program, 'time' ), shaderNode.nightbird.time );
+	gl.uniform2fv( gl.getUniformLocation( shaderNode.program, 'resolution' ), [ shaderNode.canvas.width, shaderNode.canvas.height ] );
+	gl.uniform1f( gl.getUniformLocation( shaderNode.program, 'parameter' ), shaderNode.parameter );
 
 	gl.activeTexture( gl.TEXTURE0 );
-  gl.bindTexture( gl.TEXTURE_2D, this.texture );
+  gl.bindTexture( gl.TEXTURE_2D, shaderNode.texture );
 	gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
 	gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
-  gl.uniform1i( gl.getUniformLocation( this.program, 'texture' ), 0 );
+  gl.uniform1i( gl.getUniformLocation( shaderNode.program, 'texture' ), 0 );
 
 	gl.drawArrays( gl.TRIANGLE_STRIP, 0, 4 );
 
   gl.flush();
+
+	Nightbird.Node.prototype.draw.call( shaderNode );
 
 };

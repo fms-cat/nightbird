@@ -1,18 +1,20 @@
 // reference : http://www.tohoho-web.com/wwwgif.htm
 
-var GifNode = function( _file ){
+Nightbird.GifNode = function( _nightbird, _file ){
 
-	this.canvas = document.createElement( 'canvas' );
-	this.canvas.width = 128;
-	this.canvas.height = 128;
-	this.context = this.canvas.getContext( '2d' );
+	var gifNode = this;
 
-	this.frames = [];
+	Nightbird.Node.call( gifNode, _nightbird, _file );
+
+	gifNode.canvas = document.createElement( 'canvas' );
+	gifNode.canvas.width = 128;
+	gifNode.canvas.height = 128;
+	gifNode.context = gifNode.canvas.getContext( '2d' );
+
+	gifNode.frames = [];
 
 	var reader = new FileReader();
 	var name = _file.name;
-
-	var gifBoard = this;
 	reader.onload = function(){
 
 		var dv = new DataView( reader.result );
@@ -22,8 +24,8 @@ var GifNode = function( _file ){
 		/* magic number 'GIF' */ offset += 3;
 		var gifVersion = getAscii( offset, 3 ); offset += 3;
 		if( gifVersion == '89a' ){
-			gifBoard.width = dv.getUint16( offset, 2, true ); offset += 2;
-			gifBoard.height = dv.getUint16( offset, 2, true ); offset += 2;
+			gifNode.width = dv.getUint16( offset, 2, true ); offset += 2;
+			gifNode.height = dv.getUint16( offset, 2, true ); offset += 2;
 			var gctFlag = ( dv.getUint8( offset )>>>7 );
 			var colorRes = ( dv.getUint8( offset )>>>4&7 )+1;
 			var gctSize = Math.pow( 2, ( dv.getUint8( offset )&7 )+1 ); offset ++;
@@ -60,18 +62,18 @@ var GifNode = function( _file ){
 				copyData( frame, 0, 0, dataIndex[0] );
 				copyData( frame, dataIndex[i-1], dataIndex[0], dataIndex[i]-dataIndex[i-1] );
 				var blob = new Blob( [ frame ], { "type" : "image/gif" } );
-				gifBoard.frames[i-1] = new Image();
-				gifBoard.frames[i-1].src = window.URL.createObjectURL( blob );
+				gifNode.frames[i-1] = new Image();
+				gifNode.frames[i-1].src = window.URL.createObjectURL( blob );
 				i ++;
 			}
-			gifBoard.length = i;
+			gifNode.length = i;
 		}else{
-			gifBoard.width = dv.getUint16( offset, 2, true ); offset += 2;
-			gifBoard.height = dv.getUint16( offset, 2, true ); offset += 2;
+			gifNode.width = dv.getUint16( offset, 2, true ); offset += 2;
+			gifNode.height = dv.getUint16( offset, 2, true ); offset += 2;
 			var blob = new Blob( [ dv ], { "type" : "image/gif" } );
-			gifBoard.frames[0] = new Image();
-			gifBoard.frames[0].src = window.URL.createObjectURL( blob );
-			gifBoard.length = 1;
+			gifNode.frames[0] = new Image();
+			gifNode.frames[0].src = window.URL.createObjectURL( blob );
+			gifNode.length = 1;
 		}
 
 		function copyData( _to, _fromOffset, _toOffset, _length ){
@@ -93,32 +95,34 @@ var GifNode = function( _file ){
 
 	reader.readAsArrayBuffer( _file );
 
-	this.beat = 4;
+	gifNode.beat = 4;
 
 };
 
-GifNode.prototype.setBeat = function( _b ){
+Nightbird.GifNode.prototype = Object.create( Nightbird.Node.prototype );
+Nightbird.GifNode.prototype.constructor = Nightbird.GifNode;
 
-	this.beat = _b;
+Nightbird.GifNode.prototype.setBeat = function( _b ){
 
-};
+	var gifNode = this;
 
-GifNode.prototype.setSize = function( _w, _h ){
-
-	this.canvas.width = _w;
-	this.canvas.height = _h;
+	gifNode.beat = _b;
 
 };
 
-GifNode.prototype.draw = function(){
+Nightbird.GifNode.prototype.draw = function(){
 
-	var frame = ~~( ( time*bpm/this.beat )%this.length );
+	var gifNode = this;
 
-	if( this.frames[ frame ] ){
-		var x = Math.max( ( this.width-this.height )/2, 0 );
-		var y = Math.max( ( this.height-this.width )/2, 0 );
-		var s = Math.min( this.width, this.height );
-		this.context.drawImage( this.frames[ frame ], x, y, s, s, 0, 0, this.canvas.width, this.canvas.height );
+	var frame = ~~( ( gifNode.nightbird.time*gifNode.nightbird.bpm/gifNode.beat )%gifNode.length );
+
+	if( gifNode.frames[ frame ] ){
+		var x = Math.max( ( gifNode.width-gifNode.height )/2, 0 );
+		var y = Math.max( ( gifNode.height-gifNode.width )/2, 0 );
+		var s = Math.min( gifNode.width, gifNode.height );
+		gifNode.context.drawImage( gifNode.frames[ frame ], x, y, s, s, 0, 0, gifNode.canvas.width, gifNode.canvas.height );
 	}
+
+	Nightbird.Node.prototype.draw.call( gifNode );
 
 };
