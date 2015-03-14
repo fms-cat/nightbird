@@ -24,54 +24,82 @@ var Nightbird = function(){
 	nightbird.grabOffsetY = 0;
 
 	nightbird.modular.addEventListener( 'mousedown', function( _e ){
+
+		_e.preventDefault();
+
 		var mx = _e.layerX;
 		var my = _e.layerY;
 
-		for( var i=nightbird.nodes.length-1; 0<=i; i-- ){
-			var node = nightbird.nodes[i];
-			if( 0 < mx-node.posX && mx-node.posX < node.width && 0 < my-node.posY && my-node.posY < node.height ){
-				nightbird.grabOffsetX = mx-node.posX;
-				nightbird.grabOffsetY = my-node.posY;
-				nightbird.grabNode = node;
-				nightbird.nodes.push( nightbird.nodes.splice( i, 1 )[0] );
-				return;
-			}
-			for( var ic=0; ic<node.inputs.length; ic++ ){
-				var connector = node.inputs[ic];
-				if( dist( connector.posX, connector.posY, mx, my ) < connector.radius ){
-					if( connector.link ){
-						nightbird.links.splice( nightbird.links.indexOf( connector.link ), 1 );
-						connector.link.remove();
-					}
-					var link = new Nightbird.Link( nightbird, connector );
-					connector.setLink( link );
-					nightbird.links.push( link );
-					nightbird.grabLink = link;
+		if( _e.which == 1 ){
+
+			for( var i=nightbird.nodes.length-1; 0<=i; i-- ){
+				var node = nightbird.nodes[i];
+				if( 0 < mx-node.posX && mx-node.posX < node.width && 0 < my-node.posY && my-node.posY < node.height ){
+					nightbird.grabOffsetX = mx-node.posX;
+					nightbird.grabOffsetY = my-node.posY;
+					nightbird.grabNode = node;
+					nightbird.nodes.push( nightbird.nodes.splice( i, 1 )[0] );
 					return;
 				}
-			}
-			for( var ic=0; ic<node.outputs.length; ic++ ){
-				var connector = node.outputs[ic];
-				if( dist( connector.posX, connector.posY, mx, my ) < connector.radius ){
-					if( connector.link ){
-						nightbird.links.splice( nightbird.links.indexOf( connector.link ), 1 );
-						connector.link.remove();
+				for( var ic=0; ic<node.inputs.length; ic++ ){
+					var connector = node.inputs[ic];
+					if( dist( connector.posX, connector.posY, mx, my ) < connector.radius ){
+						var link = new Nightbird.Link( nightbird, connector );
+						nightbird.links.push( link );
+						nightbird.grabLink = link;
+						return;
 					}
-					var link = new Nightbird.Link( nightbird, connector );
-					connector.setLink( link );
-					nightbird.links.push( link );
-					nightbird.grabLink = link;
-					return;
+				}
+				for( var ic=0; ic<node.outputs.length; ic++ ){
+					var connector = node.outputs[ic];
+					if( dist( connector.posX, connector.posY, mx, my ) < connector.radius ){
+						var link = new Nightbird.Link( nightbird, connector );
+						nightbird.links.push( link );
+						nightbird.grabLink = link;
+						return;
+					}
 				}
 			}
 
-			function dist( _x1, _y1, _x2, _y2 ){
-				return Math.sqrt( (_x2-_x1)*(_x2-_x1)+(_y2-_y1)*(_y2-_y1) );
+		}else if( _e.which == 3 ){
+
+			for( var i=nightbird.nodes.length-1; 0<=i; i-- ){
+				var node = nightbird.nodes[i];
+				if( 0 < mx-node.posX && mx-node.posX < node.width && 0 < my-node.posY && my-node.posY < node.height ){
+					// TODO
+					return;
+				}
+				for( var ic=0; ic<node.inputs.length; ic++ ){
+					var connector = node.inputs[ic];
+					if( dist( connector.posX, connector.posY, mx, my ) < connector.radius ){
+						if( connector.link ){
+							nightbird.links.splice( nightbird.links.indexOf( connector.link ), 1 );
+							connector.link.remove();
+							return;
+						}
+					}
+				}
+				for( var ic=0; ic<node.outputs.length; ic++ ){
+					var connector = node.outputs[ic];
+					if( dist( connector.posX, connector.posY, mx, my ) < connector.radius ){
+						for( var i=connector.link.length-1; 0<=i; i-- ){
+							nightbird.links.splice( nightbird.links.indexOf( connector.link[i] ), 1 );
+							connector.link[i].remove();
+						}
+						return;
+					}
+				}
 			}
+
+		}
+
+		function dist( _x1, _y1, _x2, _y2 ){
+			return Math.sqrt( (_x2-_x1)*(_x2-_x1)+(_y2-_y1)*(_y2-_y1) );
 		}
 	}, false );
 
 	nightbird.modular.addEventListener( 'mouseup', function( _e ){
+
 		if( nightbird.grabNode ){
 			nightbird.grabNode = null;
 		}
@@ -86,12 +114,13 @@ var Nightbird = function(){
 						var connector = node.outputs[ic];
 						if( dist( connector.posX, connector.posY, link.grabX, link.grabY ) < connector.radius ){
 							if( connector.type == link.type ){
-								if( connector.link ){
-									nightbird.links.splice( nightbird.links.indexOf( connector.link ), 1 );
-									connector.link.remove();
+								if( link.end.link ){
+									nightbird.links.splice( nightbird.links.indexOf( link.end.link ), 1 );
+									link.end.link.remove();
 								}
 								link.start = connector;
 								connector.setLink( link );
+								link.end.setLink( link );
 								link.grabStart = false;
 								return;
 							}
@@ -109,6 +138,7 @@ var Nightbird = function(){
 								}
 								link.end = connector;
 								connector.setLink( link );
+								link.start.setLink( link );
 								link.grabEnd = false;
 								return;
 							}
@@ -117,24 +147,35 @@ var Nightbird = function(){
 				}
 			}
 
-			link.remove();
 			link.nightbird.links.splice( link.nightbird.links.indexOf( link ), 1 );
 
 			function dist( _x1, _y1, _x2, _y2 ){
 				return Math.sqrt( (_x2-_x1)*(_x2-_x1)+(_y2-_y1)*(_y2-_y1) );
 			}
 		}
+
 	}, false );
 
 	nightbird.modular.addEventListener( 'mousemove', function( _e ){
+
+		_e.preventDefault();
+
 		var mx = _e.layerX;
 		var my = _e.layerY;
+
 		if( nightbird.grabNode ){
 			nightbird.grabNode.move( mx-nightbird.grabOffsetX, my-nightbird.grabOffsetY );
 		}
 		if( nightbird.grabLink ){
 			nightbird.grabLink.move( mx, my );
 		}
+
+	}, false );
+
+	nightbird.modular.addEventListener( 'contextmenu', function( _e ){
+
+		_e.preventDefault();
+
 	}, false );
 
 	this.master = new Nightbird.MasterNode( nightbird );

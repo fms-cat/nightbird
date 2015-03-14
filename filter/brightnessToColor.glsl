@@ -20,7 +20,7 @@ void main()
     vec2 uv = c/r;
     vec4 tex = texture2D( texture, vec2( uv.x, 1.-uv.y ) );
 
-    float g = gray( tex.xyz )*10.;
+    float g = gray( tex.xyz )*6.;
 
-    gl_FragColor = vec4( sin( g )*.5+.5, sin( g+2. )*.5+.5, sin( g+4. )*.5+.5, 1. );
+    gl_FragColor = vec4( sin( g )*.5+.5, sin( g+4. )*.5+.5, sin( g+2. )*.5+.5, 1. );
 }

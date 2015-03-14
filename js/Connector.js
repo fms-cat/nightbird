@@ -11,6 +11,9 @@ Nightbird.Connector = function( _nightbird, _isOutput, _type ){
 	connector.radius = 5;
 
 	connector.link = null;
+	if( connector.isOutput ){
+		connector.link = [];
+	}
 
 	connector.name = '';
 
@@ -37,15 +40,24 @@ Nightbird.Connector.prototype.setLink = function( _link ){
 
 	var connector = this;
 
-	connector.link = _link;
+	if( connector.isOutput ){
+		connector.link.push( _link );
+	}else{
+		connector.link = _link;
+	}
 
 };
 
-Nightbird.Connector.prototype.removeLink = function(){
+Nightbird.Connector.prototype.removeLink = function( _link ){
 
 	var connector = this;
 
-	connector.link = null;
+	if( connector.isOutput ){
+		connector.link.splice( connector.link.indexOf( _link ), 1 );
+	}else{
+		connector.link = null;
+		connector.onTransfer( null );
+	}
 
 };
 
@@ -66,7 +78,7 @@ Nightbird.Connector.prototype.draw = function(){
 	connector.nightbird.modularContext.strokeStyle = '#000';
 	connector.nightbird.modularContext.stroke();
 
-	if( !connector.link ){
+	if( !connector.link || connector.link.length == 0 ){
 		connector.nightbird.modularContext.textAlign = connector.isOutput ? 'left' : 'right';
 		connector.nightbird.modularContext.textBaseline = 'middle';
 		connector.nightbird.modularContext.fillStyle = '#ddd';

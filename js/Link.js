@@ -39,11 +39,10 @@ Nightbird.Link.prototype.remove = function(){
 	var link = this;
 
 	if( link.start ){
-		link.start.removeLink();
+		link.start.removeLink( link );
 	}
 	if( link.end ){
-		link.end.removeLink();
-		link.end.onTransfer( null );
+		link.end.removeLink( link );
 	}
 
 };

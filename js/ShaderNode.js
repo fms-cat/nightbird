@@ -6,6 +6,7 @@ Nightbird.ShaderNode = function( _nightbird, _file ){
 	var shaderNode = this;
 
 	Nightbird.Node.call( shaderNode, _nightbird );
+	shaderNode.name = _file.name;
 
 	shaderNode.canvas = document.createElement( 'canvas' );
 	shaderNode.canvas.width = 512;
@@ -167,9 +168,7 @@ Nightbird.ShaderNode.prototype.draw = function(){
 
   gl.flush();
 
-	var w = shaderNode.width;
-	var h = shaderNode.height;
-	shaderNode.nightbird.modularContext.drawImage( shaderNode.canvas, shaderNode.posX, shaderNode.posY, w, h );
+	shaderNode.nightbird.modularContext.drawImage( shaderNode.canvas, shaderNode.posX, shaderNode.posY, 100, 100 );
 
 	Nightbird.Node.prototype.draw.call( shaderNode );
 

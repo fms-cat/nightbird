@@ -5,6 +5,7 @@ Nightbird.MasterNode = function( _nightbird ){
 	Nightbird.Node.call( masterNode, _nightbird );
 
 	masterNode.nightbird = _nightbird;
+	masterNode.name = 'Master';
 
 	masterNode.canvas = document.createElement( 'canvas' );
 	masterNode.canvas.width = 512;
@@ -15,7 +16,7 @@ Nightbird.MasterNode = function( _nightbird ){
 	masterNode.context = masterNode.canvas.getContext( '2d' );
 
 	var inputCanvas = new Nightbird.Connector( masterNode.nightbird, false, 'canvas' );
-	inputCanvas.setName( 'canvas' );
+	inputCanvas.setName( 'input' );
 	inputCanvas.onTransfer = function( _data ){
 		masterNode.input = _data;
 	};
@@ -37,9 +38,7 @@ Nightbird.MasterNode.prototype.draw = function(){
 		masterNode.context.fillRect( 0, 0, masterNode.canvas.width, masterNode.canvas.height );
 	}
 
-	var w = masterNode.width;
-	var h = masterNode.height;
-	masterNode.nightbird.modularContext.drawImage( masterNode.canvas, masterNode.posX, masterNode.posY, w, h );
+	masterNode.nightbird.modularContext.drawImage( masterNode.canvas, masterNode.posX, masterNode.posY, 100, 100 );
 
 	Nightbird.Node.prototype.draw.call( masterNode );
 
