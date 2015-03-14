@@ -5,6 +5,7 @@ Nightbird.GifNode = function( _nightbird, _file ){
 	var gifNode = this;
 
 	Nightbird.Node.call( gifNode, _nightbird );
+	gifNode.playing = true;
 	gifNode.name = _file.name;
 
 	gifNode.canvas = document.createElement( 'canvas' );
@@ -102,10 +103,19 @@ Nightbird.GifNode = function( _nightbird, _file ){
 	gifNode.beat = 4;
 
 	var outputCanvas = new Nightbird.Connector( nightbird, true, 'canvas' );
-	outputCanvas.setName( 'canvas' );
+	outputCanvas.setName( 'output' );
 	outputCanvas.transferData = gifNode.canvas;
 	gifNode.outputs.push( outputCanvas );
 	gifNode.move();
+
+	gifNode.contextMenus.unshift( function(){
+		var contextMenu = new Nightbird.ContextMenu( gifNode.nightbird );
+		contextMenu.setName( 'Play / Stop' );
+		contextMenu.onClick = function(){
+			gifNode.playing = !gifNode.playing;
+		};
+		return contextMenu;
+	} );
 
 };
 
@@ -124,13 +134,17 @@ Nightbird.GifNode.prototype.draw = function(){
 
 	var gifNode = this;
 
-	var frame = ~~( ( gifNode.nightbird.time*gifNode.nightbird.bpm/60/gifNode.beat*gifNode.gif.length )%gifNode.gif.length );
+	if( gifNode.playing ){
 
-	if( gifNode.frames[ frame ] ){
-		var x = Math.max( ( gifNode.gif.width-gifNode.gif.height )/2, 0 );
-		var y = Math.max( ( gifNode.gif.height-gifNode.gif.width )/2, 0 );
-		var s = Math.min( gifNode.gif.width, gifNode.gif.height );
-		gifNode.context.drawImage( gifNode.frames[ frame ], x, y, s, s, 0, 0, gifNode.canvas.width, gifNode.canvas.height );
+		var frame = ~~( ( gifNode.nightbird.time*gifNode.nightbird.bpm/60/gifNode.beat*gifNode.gif.length )%gifNode.gif.length );
+
+		if( gifNode.frames[ frame ] ){
+			var x = Math.max( ( gifNode.gif.width-gifNode.gif.height )/2, 0 );
+			var y = Math.max( ( gifNode.gif.height-gifNode.gif.width )/2, 0 );
+			var s = Math.min( gifNode.gif.width, gifNode.gif.height );
+			gifNode.context.drawImage( gifNode.frames[ frame ], x, y, s, s, 0, 0, gifNode.canvas.width, gifNode.canvas.height );
+		}
+
 	}
 
 	gifNode.nightbird.modularContext.drawImage( gifNode.canvas, gifNode.posX, gifNode.posY, 100, 100 );

@@ -20,6 +20,6 @@ void main()
     vec2 uv = c/r;
     vec4 tex = texture2D( texture0, vec2( uv.x, 1.-uv.y ) );
     float g = gray( tex.xyz );
-    float m = .95+.05*sin(uv.y*400.+t*10.);
+    float m = .95+.05*sin(uv.y*800.+t*30.);
     gl_FragColor = vec4( vec3( 0., 1., .3 )*(1.-gray( tex.xyz ))*m, 1. );
 }

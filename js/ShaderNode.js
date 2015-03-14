@@ -6,6 +6,7 @@ Nightbird.ShaderNode = function( _nightbird, _file ){
 	var shaderNode = this;
 
 	Nightbird.Node.call( shaderNode, _nightbird );
+	shaderNode.playing = true;
 	shaderNode.name = _file.name;
 
 	shaderNode.canvas = document.createElement( 'canvas' );
@@ -34,16 +35,24 @@ Nightbird.ShaderNode = function( _nightbird, _file ){
 
 	shaderNode.loadGlsl( _file );
 
-	shaderNode.parameter = 0;
+	shaderNode.textures = [];
+	shaderNode.params = [];
 
 	var outputCanvas = new Nightbird.Connector( shaderNode.nightbird, true, 'canvas' );
-	outputCanvas.setName( 'canvas' );
+	outputCanvas.setName( 'output' );
 	outputCanvas.transferData = shaderNode.canvas;
 	shaderNode.outputs.push( outputCanvas );
 
-	shaderNode.texture = [];
-	shaderNode.param = [];
 	shaderNode.move();
+
+	shaderNode.contextMenus.unshift( function(){
+		var contextMenu = new Nightbird.ContextMenu( shaderNode.nightbird );
+		contextMenu.setName( 'Play / Stop' );
+		contextMenu.onClick = function(){
+			shaderNode.playing = !shaderNode.playing;
+		};
+		return contextMenu;
+	} );
 
 };
 
@@ -100,8 +109,8 @@ Nightbird.ShaderNode.prototype.loadGlsl = function( _file ){
 			var re = new RegExp( "uniform sampler2D texture"+i );
 			if( re.test( reader.result ) ){
 				gl.activeTexture( 33984+i ); // gl.TEXTURE0 = 33984
-				shaderNode.texture[i] = gl.createTexture();
-				gl.bindTexture( gl.TEXTURE_2D, shaderNode.texture[i] );
+				shaderNode.textures[i] = gl.createTexture();
+				gl.bindTexture( gl.TEXTURE_2D, shaderNode.textures[i] );
 			  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
 			  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
 				gl.bindTexture( gl.TEXTURE_2D, null );
@@ -153,7 +162,7 @@ Nightbird.ShaderNode.prototype.setTexture = function( _i, _img ){
 	var shaderNode = this;
 	var gl = shaderNode.gl;
 
-	gl.bindTexture( gl.TEXTURE_2D, shaderNode.texture[_i] );
+	gl.bindTexture( gl.TEXTURE_2D, shaderNode.textures[_i] );
   gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _img );
   gl.bindTexture( gl.TEXTURE_2D, null );
 
@@ -163,42 +172,47 @@ Nightbird.ShaderNode.prototype.setParam = function( _i, _param ){
 
 	var shaderNode = this;
 
-	shaderNode.param[_i] = _param;
+	shaderNode.params[_i] = _param;
 
 };
 
 Nightbird.ShaderNode.prototype.draw = function(){
 
 	var shaderNode = this;
-	var gl = shaderNode.gl;
 
-	gl.clearColor( 0, 0, 0, 1 );
-  gl.clearDepth( 1 );
-  gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+	if( shaderNode.playing ){
 
-	gl.useProgram( shaderNode.program );
+		var gl = shaderNode.gl;
 
-	gl.uniform1f( gl.getUniformLocation( shaderNode.program, 'time' ), shaderNode.nightbird.time );
-	gl.uniform2fv( gl.getUniformLocation( shaderNode.program, 'resolution' ), [ shaderNode.canvas.width, shaderNode.canvas.height ] );
-	for( var i=0; i<4; i++ ){
-		if( typeof shaderNode.param[i] == 'number' ){
-			gl.uniform1f( gl.getUniformLocation( shaderNode.program, 'param'+i ), shaderNode.param[i] );
+		gl.clearColor( 0, 0, 0, 1 );
+	  gl.clearDepth( 1 );
+	  gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
+
+		gl.useProgram( shaderNode.program );
+
+		gl.uniform1f( gl.getUniformLocation( shaderNode.program, 'time' ), shaderNode.nightbird.time );
+		gl.uniform2fv( gl.getUniformLocation( shaderNode.program, 'resolution' ), [ shaderNode.canvas.width, shaderNode.canvas.height ] );
+		for( var i=0; i<4; i++ ){
+			if( typeof shaderNode.params[i] == 'number' ){
+				gl.uniform1f( gl.getUniformLocation( shaderNode.program, 'param'+i ), shaderNode.params[i] );
+			}
 		}
-	}
 
-	for( var i=0; i<4; i++ ){
-		if( shaderNode.texture[i] ){
-			gl.activeTexture( 33984+i ); // gl.TEXTURE0 = 33984
-		  gl.bindTexture( gl.TEXTURE_2D, shaderNode.texture[i] );
-			gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
-			gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
-		  gl.uniform1i( gl.getUniformLocation( shaderNode.program, 'texture'+i ), i );
+		for( var i=0; i<4; i++ ){
+			if( shaderNode.textures[i] ){
+				gl.activeTexture( 33984+i ); // gl.TEXTURE0 = 33984
+			  gl.bindTexture( gl.TEXTURE_2D, shaderNode.textures[i] );
+				gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
+				gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+			  gl.uniform1i( gl.getUniformLocation( shaderNode.program, 'texture'+i ), i );
+			}
 		}
+
+		gl.drawArrays( gl.TRIANGLE_STRIP, 0, 4 );
+
+	  gl.flush();
+
 	}
-
-	gl.drawArrays( gl.TRIANGLE_STRIP, 0, 4 );
-
-  gl.flush();
 
 	shaderNode.nightbird.modularContext.drawImage( shaderNode.canvas, shaderNode.posX, shaderNode.posY, 100, 100 );
 

@@ -7,8 +7,8 @@ var Nightbird = function(){
 	nightbird.subWindow.document.body.style.margin = 0;
 
 	nightbird.modular = document.createElement( 'canvas' );
-	nightbird.modular.width = 128;
-	nightbird.modular.height = 128;
+	nightbird.modular.width = 512;
+	nightbird.modular.height = 512;
 	nightbird.modularContext = nightbird.modular.getContext( '2d' );
 
 	nightbird.begint = +new Date();
@@ -17,9 +17,11 @@ var Nightbird = function(){
 
 	nightbird.nodes = [];
 	nightbird.links = [];
+	nightbird.contextMenus = [];
 
 	nightbird.grabNode = null;
 	nightbird.grabLink = null;
+	nightbird.selectContextMenu = null;
 	nightbird.grabOffsetX = 0;
 	nightbird.grabOffsetY = 0;
 
@@ -32,9 +34,22 @@ var Nightbird = function(){
 
 		if( _e.which == 1 ){
 
+			for( var i=0; i<nightbird.contextMenus.length; i++ ){
+				var contextMenu = nightbird.contextMenus[i];
+				if( 0 <= mx-contextMenu.posX && mx-contextMenu.posX < contextMenu.width && 0 <= my-contextMenu.posY && my-contextMenu.posY < contextMenu.height ){
+					nightbird.selectContextMenu = contextMenu;
+					contextMenu.selected = true;
+					return;
+				}
+			}
+			nightbird.contextMenus = [];
+
 			for( var i=nightbird.nodes.length-1; 0<=i; i-- ){
 				var node = nightbird.nodes[i];
-				if( 0 < mx-node.posX && mx-node.posX < node.width && 0 < my-node.posY && my-node.posY < node.height ){
+				if( 0 <= mx-node.posX && mx-node.posX < node.width && 0 <= my-node.posY && my-node.posY < node.height ){
+					if( node.operateX <= mx-node.posX && mx-node.posX < node.operateX+node.operateW && node.operateY <= my-node.posY && my-node.posY < node.operateY*node.operateW ){
+						node.operate( mx-node.posX, my-node.posY );
+					}
 					nightbird.grabOffsetX = mx-node.posX;
 					nightbird.grabOffsetY = my-node.posY;
 					nightbird.grabNode = node;
@@ -63,10 +78,16 @@ var Nightbird = function(){
 
 		}else if( _e.which == 3 ){
 
+			nightbird.contextMenus = [];
+
 			for( var i=nightbird.nodes.length-1; 0<=i; i-- ){
 				var node = nightbird.nodes[i];
-				if( 0 < mx-node.posX && mx-node.posX < node.width && 0 < my-node.posY && my-node.posY < node.height ){
-					// TODO
+				if( 0 <= mx-node.posX && mx-node.posX < node.width && 0 <= my-node.posY && my-node.posY < node.height ){
+					for( var i=0; i<node.contextMenus.length; i++ ){
+						var contextMenu = node.contextMenus[i]();
+						contextMenu.move( mx, my+i*16 );
+						nightbird.contextMenus.push( contextMenu );
+					}
 					return;
 				}
 				for( var ic=0; ic<node.inputs.length; ic++ ){
@@ -100,9 +121,19 @@ var Nightbird = function(){
 
 	nightbird.modular.addEventListener( 'mouseup', function( _e ){
 
+		_e.preventDefault();
+
+		if( nightbird.selectContextMenu ){
+			nightbird.selectContextMenu.onClick();
+			nightbird.selectContextMenu.selected = false;
+			nightbird.selectContextMenu = null;
+			nightbird.contextMenus = [];
+		}
+
 		if( nightbird.grabNode ){
 			nightbird.grabNode = null;
 		}
+
 		if( nightbird.grabLink ){
 			var link = nightbird.grabLink;
 			nightbird.grabLink = null;
@@ -163,9 +194,19 @@ var Nightbird = function(){
 		var mx = _e.layerX;
 		var my = _e.layerY;
 
+		if( nightbird.selectContextMenu ){
+			var contextMenu = nightbird.selectContextMenu;
+			if( 0 <= mx-contextMenu.posX && mx-contextMenu.posX < contextMenu.width && 0 <= my-contextMenu.posY && my-contextMenu.posY < contextMenu.height ){
+			}else{
+				nightbird.selectContextMenu = null;
+				contextMenu.selected = false;
+			}
+		}
+
 		if( nightbird.grabNode ){
 			nightbird.grabNode.move( mx-nightbird.grabOffsetX, my-nightbird.grabOffsetY );
 		}
+
 		if( nightbird.grabLink ){
 			nightbird.grabLink.move( mx, my );
 		}
@@ -239,12 +280,16 @@ Nightbird.prototype.draw = function(){
 	nightbird.modularContext.fillStyle = '#222';
 	nightbird.modularContext.fillRect( 0, 0, nightbird.modular.width, nightbird.modular.height );
 
+	for( var link of nightbird.links ){
+		link.draw();
+	}
+
 	for( var node of nightbird.nodes ){
 		node.draw();
 	}
 
-	for( var link of nightbird.links ){
-		link.draw();
+	for( var contextMenu of nightbird.contextMenus ){
+		contextMenu.draw();
 	}
 
 };
