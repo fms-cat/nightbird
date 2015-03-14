@@ -2,12 +2,9 @@ var Nightbird = function(){
 
 	var nightbird = this;
 
-	nightbird.subWindow = window.open( 'about:blank', 'sub', 'menubar=no' );
-
-	nightbird.canvas = document.createElement( 'canvas' );
-	nightbird.canvas.width = 128;
-	nightbird.canvas.height = 128;
-	nightbird.context = nightbird.canvas.getContext( '2d' );
+	nightbird.subWindow = window.open( 'about:blank', 'sub', 'width=512,height=512,menubar=no' );
+	nightbird.subWindow.document.body.style.padding = 0;
+	nightbird.subWindow.document.body.style.margin = 0;
 
 	nightbird.modular = document.createElement( 'canvas' );
 	nightbird.modular.width = 128;
@@ -42,7 +39,12 @@ var Nightbird = function(){
 			for( var ic=0; ic<node.inputs.length; ic++ ){
 				var connector = node.inputs[ic];
 				if( dist( connector.posX, connector.posY, mx, my ) < connector.radius ){
+					if( connector.link ){
+						nightbird.links.splice( nightbird.links.indexOf( connector.link ), 1 );
+						connector.link.remove();
+					}
 					var link = new Nightbird.Link( nightbird, connector );
+					connector.setLink( link );
 					nightbird.links.push( link );
 					nightbird.grabLink = link;
 					return;
@@ -51,7 +53,12 @@ var Nightbird = function(){
 			for( var ic=0; ic<node.outputs.length; ic++ ){
 				var connector = node.outputs[ic];
 				if( dist( connector.posX, connector.posY, mx, my ) < connector.radius ){
+					if( connector.link ){
+						nightbird.links.splice( nightbird.links.indexOf( connector.link ), 1 );
+						connector.link.remove();
+					}
 					var link = new Nightbird.Link( nightbird, connector );
+					connector.setLink( link );
 					nightbird.links.push( link );
 					nightbird.grabLink = link;
 					return;
@@ -69,8 +76,53 @@ var Nightbird = function(){
 			nightbird.grabNode = null;
 		}
 		if( nightbird.grabLink ){
-			nightbird.grabLink.release();
+			var link = nightbird.grabLink;
 			nightbird.grabLink = null;
+
+			for( var i=link.nightbird.nodes.length-1; 0<=i; i-- ){
+				var node = link.nightbird.nodes[i];
+				if( link.grabStart ){
+					for( var ic=0; ic<node.outputs.length; ic++ ){
+						var connector = node.outputs[ic];
+						if( dist( connector.posX, connector.posY, link.grabX, link.grabY ) < connector.radius ){
+							if( connector.type == link.type ){
+								if( connector.link ){
+									nightbird.links.splice( nightbird.links.indexOf( connector.link ), 1 );
+									connector.link.remove();
+								}
+								link.start = connector;
+								connector.setLink( link );
+								link.grabStart = false;
+								return;
+							}
+						}
+					}
+				}
+				if( link.grabEnd ){
+					for( var ic=0; ic<node.inputs.length; ic++ ){
+						var connector = node.inputs[ic];
+						if( dist( connector.posX, connector.posY, link.grabX, link.grabY ) < connector.radius ){
+							if( connector.type == link.type ){
+								if( connector.link ){
+									nightbird.links.splice( nightbird.links.indexOf( connector.link ), 1 );
+									connector.link.remove();
+								}
+								link.end = connector;
+								connector.setLink( link );
+								link.grabEnd = false;
+								return;
+							}
+						}
+					}
+				}
+			}
+
+			link.remove();
+			link.nightbird.links.splice( link.nightbird.links.indexOf( link ), 1 );
+
+			function dist( _x1, _y1, _x2, _y2 ){
+				return Math.sqrt( (_x2-_x1)*(_x2-_x1)+(_y2-_y1)*(_y2-_y1) );
+			}
 		}
 	}, false );
 
@@ -84,6 +136,10 @@ var Nightbird = function(){
 			nightbird.grabLink.move( mx, my );
 		}
 	}, false );
+
+	this.master = new Nightbird.MasterNode( nightbird );
+	nightbird.nodes.push( this.master );
+	nightbird.subWindow.document.body.appendChild( this.master.canvas );
 
 	nightbird.input = document.createElement( 'input' );
 	nightbird.input.type = 'file';

@@ -4,11 +4,12 @@ Nightbird.GifNode = function( _nightbird, _file ){
 
 	var gifNode = this;
 
-	Nightbird.Node.call( gifNode, _nightbird, _file );
+	Nightbird.Node.call( gifNode, _nightbird );
 
 	gifNode.canvas = document.createElement( 'canvas' );
-	gifNode.canvas.width = 128;
-	gifNode.canvas.height = 128;
+	gifNode.canvas.width = 512;
+	gifNode.canvas.height = 512;
+
 	gifNode.context = gifNode.canvas.getContext( '2d' );
 
 	gifNode.frames = [];
@@ -100,6 +101,8 @@ Nightbird.GifNode = function( _nightbird, _file ){
 	gifNode.beat = 4;
 
 	var outputCanvas = new Nightbird.Connector( nightbird, true, 'canvas' );
+	outputCanvas.setName( 'canvas' );
+	outputCanvas.transferData = gifNode.canvas;
 	gifNode.outputs.push( outputCanvas );
 	gifNode.move();
 
@@ -123,11 +126,16 @@ Nightbird.GifNode.prototype.draw = function(){
 	var frame = ~~( ( gifNode.nightbird.time*gifNode.nightbird.bpm/60/gifNode.beat*gifNode.gif.length )%gifNode.gif.length );
 
 	if( gifNode.frames[ frame ] ){
+		console.log(gifNode.frames[frame]);
 		var x = Math.max( ( gifNode.gif.width-gifNode.gif.height )/2, 0 );
 		var y = Math.max( ( gifNode.gif.height-gifNode.gif.width )/2, 0 );
 		var s = Math.min( gifNode.gif.width, gifNode.gif.height );
 		gifNode.context.drawImage( gifNode.frames[ frame ], x, y, s, s, 0, 0, gifNode.canvas.width, gifNode.canvas.height );
 	}
+
+	var w = gifNode.width;
+	var h = gifNode.height;
+	gifNode.nightbird.modularContext.drawImage( gifNode.canvas, gifNode.posX, gifNode.posY, w, h );
 
 	Nightbird.Node.prototype.draw.call( gifNode );
 

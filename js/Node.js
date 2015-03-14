@@ -1,4 +1,4 @@
-Nightbird.Node = function( _nightbird, _file ){
+Nightbird.Node = function( _nightbird ){
 
 	var node = this;
 
@@ -29,10 +29,10 @@ Nightbird.Node.prototype.move = function( _x, _y ){
 	}
 
 	for( var i in node.inputs ){
-		node.inputs[i].move( node.posX-10, node.posY+10+10*i );
+		node.inputs[i].move( node.posX-12, node.posY+10+16*i );
 	}
 	for( var i in node.outputs ){
-		node.outputs[i].move( node.posX+node.width+10, node.posY+10+10*i );
+		node.outputs[i].move( node.posX+node.width+12, node.posY+10+16*i );
 	}
 
 };
@@ -49,10 +49,6 @@ Nightbird.Node.prototype.setSize = function( _w, _h ){
 Nightbird.Node.prototype.draw = function(){
 
 	var node = this;
-
-	var w = node.width;
-	var h = node.height;
-	node.nightbird.modularContext.drawImage( node.canvas, node.posX, node.posY, w, h );
 
 	for( var i in node.inputs ){
 		node.inputs[i].draw();

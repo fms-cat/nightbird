@@ -5,7 +5,11 @@ Nightbird.ShaderNode = function( _nightbird, _file ){
 
 	var shaderNode = this;
 
-	Nightbird.Node.call( shaderNode, _nightbird, _file );
+	Nightbird.Node.call( shaderNode, _nightbird );
+
+	shaderNode.canvas = document.createElement( 'canvas' );
+	shaderNode.canvas.width = 512;
+	shaderNode.canvas.height = 512;
 
 	shaderNode.gl = shaderNode.canvas.getContext( 'webgl' );
 	var gl = shaderNode.gl;
@@ -39,9 +43,21 @@ Nightbird.ShaderNode = function( _nightbird, _file ){
 	shaderNode.parameter = 0;
 
 	var outputCanvas = new Nightbird.Connector( nightbird, true, 'canvas' );
+	outputCanvas.setName( 'canvas' );
+	outputCanvas.transferData = shaderNode.canvas;
 	shaderNode.outputs.push( outputCanvas );
 	var inputCanvas = new Nightbird.Connector( nightbird, false, 'canvas' );
+	inputCanvas.setName( 'canvas' );
+	inputCanvas.onTransfer = function( _data ){
+		shaderNode.setTexture( _data );
+	};
 	shaderNode.inputs.push( inputCanvas );
+	var inputParam = new Nightbird.Connector( nightbird, false, 'number' );
+	inputParam.setName( 'param' );
+	inputParam.onTransfer = function( _data ){
+		shaderNode.setParameter( _data );
+	};
+	shaderNode.inputs.push( inputParam );
 	shaderNode.move();
 
 };
@@ -150,6 +166,10 @@ Nightbird.ShaderNode.prototype.draw = function(){
 	gl.drawArrays( gl.TRIANGLE_STRIP, 0, 4 );
 
   gl.flush();
+
+	var w = shaderNode.width;
+	var h = shaderNode.height;
+	shaderNode.nightbird.modularContext.drawImage( shaderNode.canvas, shaderNode.posX, shaderNode.posY, w, h );
 
 	Nightbird.Node.prototype.draw.call( shaderNode );
 

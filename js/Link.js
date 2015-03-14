@@ -25,42 +25,6 @@ Nightbird.Link = function( _nightbird, _connector ){
 
 };
 
-Nightbird.Link.prototype.release = function(){
-
-	var link = this;
-
-	for( var i=link.nightbird.nodes.length-1; 0<=i; i-- ){
-		var node = link.nightbird.nodes[i];
-		if( link.grabStart ){
-			for( var ic=0; ic<node.outputs.length; ic++ ){
-				var connector = node.outputs[ic];
-				if( dist( connector.posX, connector.posY, link.grabX, link.grabY ) < connector.radius && connector.type == link.type ){
-					link.start = connector;
-					link.grabStart = false;
-					return;
-				}
-			}
-		}
-		if( link.grabEnd ){
-			for( var ic=0; ic<node.inputs.length; ic++ ){
-				var connector = node.inputs[ic];
-				if( dist( connector.posX, connector.posY, link.grabX, link.grabY ) < connector.radius && connector.type == link.type ){
-					link.end = connector;
-					link.grabEnd = false;
-					return;
-				}
-			}
-		}
-	}
-
-	link.nightbird.links.splice( link.nightbird.links.indexOf( link ), 1 );
-
-	function dist( _x1, _y1, _x2, _y2 ){
-		return Math.sqrt( (_x2-_x1)*(_x2-_x1)+(_y2-_y1)*(_y2-_y1) );
-	}
-
-};
-
 Nightbird.Link.prototype.move = function( _x, _y ){
 
 	var link = this;
@@ -70,9 +34,35 @@ Nightbird.Link.prototype.move = function( _x, _y ){
 
 };
 
+Nightbird.Link.prototype.remove = function(){
+
+	var link = this;
+
+	if( link.start ){
+		link.start.removeLink();
+	}
+	if( link.end ){
+		link.end.removeLink();
+		link.end.onTransfer( null );
+	}
+
+};
+
+Nightbird.Link.prototype.transfer = function(){
+
+	var link = this;
+
+	link.end.onTransfer( link.start.transferData );
+
+};
+
 Nightbird.Link.prototype.draw = function(){
 
 	var link = this;
+
+	if( link.start && link.end ){
+		link.transfer();
+	}
 
 	var sx = link.grabStart ? link.grabX : link.start.posX;
 	var sy = link.grabStart ? link.grabY : link.start.posY;
@@ -85,7 +75,7 @@ Nightbird.Link.prototype.draw = function(){
 	}else{
 		link.nightbird.modularContext.bezierCurveTo( sx, sy+(ey-sy)*.3, ex, ey-(ey-sy)*.3, ex, ey );
 	}
-	link.nightbird.modularContext.lineWidth = 3;
+	link.nightbird.modularContext.lineWidth = 2;
 	var col;
 	switch( link.type ){
 		case 'canvas' : col = '#06f'; break;
