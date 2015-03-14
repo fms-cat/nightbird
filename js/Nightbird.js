@@ -19,33 +19,69 @@ var Nightbird = function(){
 	nightbird.bpm = 120;
 
 	nightbird.nodes = [];
+	nightbird.links = [];
 
 	nightbird.grabNode = null;
+	nightbird.grabLink = null;
 	nightbird.grabOffsetX = 0;
 	nightbird.grabOffsetY = 0;
+
 	nightbird.modular.addEventListener( 'mousedown', function( _e ){
 		var mx = _e.layerX;
 		var my = _e.layerY;
-		for( var i = nightbird.nodes.length-1; 0<=i; i-- ){
+
+		for( var i=nightbird.nodes.length-1; 0<=i; i-- ){
 			var node = nightbird.nodes[i];
-			if( Math.abs( mx-node.posX ) < node.width/2 && Math.abs( my-node.posY ) < node.height/2 ){
+			if( 0 < mx-node.posX && mx-node.posX < node.width && 0 < my-node.posY && my-node.posY < node.height ){
 				nightbird.grabOffsetX = mx-node.posX;
 				nightbird.grabOffsetY = my-node.posY;
 				nightbird.grabNode = node;
 				nightbird.nodes.push( nightbird.nodes.splice( i, 1 )[0] );
-				break;
+				return;
+			}
+			for( var ic=0; ic<node.inputs.length; ic++ ){
+				var connector = node.inputs[ic];
+				if( dist( connector.posX, connector.posY, mx, my ) < connector.radius ){
+					var link = new Nightbird.Link( nightbird, connector );
+					nightbird.links.push( link );
+					nightbird.grabLink = link;
+					return;
+				}
+			}
+			for( var ic=0; ic<node.outputs.length; ic++ ){
+				var connector = node.outputs[ic];
+				if( dist( connector.posX, connector.posY, mx, my ) < connector.radius ){
+					var link = new Nightbird.Link( nightbird, connector );
+					nightbird.links.push( link );
+					nightbird.grabLink = link;
+					return;
+				}
+			}
+
+			function dist( _x1, _y1, _x2, _y2 ){
+				return Math.sqrt( (_x2-_x1)*(_x2-_x1)+(_y2-_y1)*(_y2-_y1) );
 			}
 		}
 	}, false );
+
 	nightbird.modular.addEventListener( 'mouseup', function( _e ){
-		nightbird.grabNode = null;
+		if( nightbird.grabNode ){
+			nightbird.grabNode = null;
+		}
+		if( nightbird.grabLink ){
+			nightbird.grabLink.release();
+			nightbird.grabLink = null;
+		}
 	}, false );
+
 	nightbird.modular.addEventListener( 'mousemove', function( _e ){
 		var mx = _e.layerX;
 		var my = _e.layerY;
 		if( nightbird.grabNode ){
-			nightbird.grabNode.posX = mx-nightbird.grabOffsetX;
-			nightbird.grabNode.posY = my-nightbird.grabOffsetY;
+			nightbird.grabNode.move( mx-nightbird.grabOffsetX, my-nightbird.grabOffsetY );
+		}
+		if( nightbird.grabLink ){
+			nightbird.grabLink.move( mx, my );
 		}
 	}, false );
 
@@ -97,23 +133,21 @@ Nightbird.prototype.setModularSize = function( _w, _h ){
 
 };
 
-Nightbird.prototype.grabNode = function(){
-
-	var nightbird = this;
-
-};
-
 Nightbird.prototype.draw = function(){
 
 	var nightbird = this;
 
 	nightbird.time = ( +new Date() - nightbird.begint )*1e-3;
 
-	nightbird.modularContext.fillStyle = '#888';
+	nightbird.modularContext.fillStyle = '#222';
 	nightbird.modularContext.fillRect( 0, 0, nightbird.modular.width, nightbird.modular.height );
 
 	for( var node of nightbird.nodes ){
 		node.draw();
+	}
+
+	for( var link of nightbird.links ){
+		link.draw();
 	}
 
 };

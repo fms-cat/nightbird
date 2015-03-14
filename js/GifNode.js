@@ -13,6 +13,8 @@ Nightbird.GifNode = function( _nightbird, _file ){
 
 	gifNode.frames = [];
 
+	gifNode.gif = {};
+
 	var reader = new FileReader();
 	var name = _file.name;
 	reader.onload = function(){
@@ -24,8 +26,8 @@ Nightbird.GifNode = function( _nightbird, _file ){
 		/* magic number 'GIF' */ offset += 3;
 		var gifVersion = getAscii( offset, 3 ); offset += 3;
 		if( gifVersion == '89a' ){
-			gifNode.width = dv.getUint16( offset, 2, true ); offset += 2;
-			gifNode.height = dv.getUint16( offset, 2, true ); offset += 2;
+			gifNode.gif.width = dv.getUint16( offset, 2, true ); offset += 2;
+			gifNode.gif.height = dv.getUint16( offset, 2, true ); offset += 2;
 			var gctFlag = ( dv.getUint8( offset )>>>7 );
 			var colorRes = ( dv.getUint8( offset )>>>4&7 )+1;
 			var gctSize = Math.pow( 2, ( dv.getUint8( offset )&7 )+1 ); offset ++;
@@ -66,14 +68,14 @@ Nightbird.GifNode = function( _nightbird, _file ){
 				gifNode.frames[i-1].src = window.URL.createObjectURL( blob );
 				i ++;
 			}
-			gifNode.length = i;
+			gifNode.gif.length = i;
 		}else{
-			gifNode.width = dv.getUint16( offset, 2, true ); offset += 2;
-			gifNode.height = dv.getUint16( offset, 2, true ); offset += 2;
+			gifNode.gif.width = dv.getUint16( offset, 2, true ); offset += 2;
+			gifNode.gif.height = dv.getUint16( offset, 2, true ); offset += 2;
 			var blob = new Blob( [ dv ], { "type" : "image/gif" } );
 			gifNode.frames[0] = new Image();
 			gifNode.frames[0].src = window.URL.createObjectURL( blob );
-			gifNode.length = 1;
+			gifNode.gif.length = 1;
 		}
 
 		function copyData( _to, _fromOffset, _toOffset, _length ){
@@ -97,6 +99,10 @@ Nightbird.GifNode = function( _nightbird, _file ){
 
 	gifNode.beat = 4;
 
+	var outputCanvas = new Nightbird.Connector( nightbird, true, 'canvas' );
+	gifNode.outputs.push( outputCanvas );
+	gifNode.move();
+
 };
 
 Nightbird.GifNode.prototype = Object.create( Nightbird.Node.prototype );
@@ -114,12 +120,12 @@ Nightbird.GifNode.prototype.draw = function(){
 
 	var gifNode = this;
 
-	var frame = ~~( ( gifNode.nightbird.time*gifNode.nightbird.bpm/gifNode.beat )%gifNode.length );
+	var frame = ~~( ( gifNode.nightbird.time*gifNode.nightbird.bpm/60/gifNode.beat*gifNode.gif.length )%gifNode.gif.length );
 
 	if( gifNode.frames[ frame ] ){
-		var x = Math.max( ( gifNode.width-gifNode.height )/2, 0 );
-		var y = Math.max( ( gifNode.height-gifNode.width )/2, 0 );
-		var s = Math.min( gifNode.width, gifNode.height );
+		var x = Math.max( ( gifNode.gif.width-gifNode.gif.height )/2, 0 );
+		var y = Math.max( ( gifNode.gif.height-gifNode.gif.width )/2, 0 );
+		var s = Math.min( gifNode.gif.width, gifNode.gif.height );
 		gifNode.context.drawImage( gifNode.frames[ frame ], x, y, s, s, 0, 0, gifNode.canvas.width, gifNode.canvas.height );
 	}
 

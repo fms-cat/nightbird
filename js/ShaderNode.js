@@ -38,6 +38,12 @@ Nightbird.ShaderNode = function( _nightbird, _file ){
 
 	shaderNode.parameter = 0;
 
+	var outputCanvas = new Nightbird.Connector( nightbird, true, 'canvas' );
+	shaderNode.outputs.push( outputCanvas );
+	var inputCanvas = new Nightbird.Connector( nightbird, false, 'canvas' );
+	shaderNode.inputs.push( inputCanvas );
+	shaderNode.move();
+
 };
 
 Nightbird.ShaderNode.prototype = Object.create( Nightbird.Node.prototype );
@@ -109,6 +115,14 @@ Nightbird.ShaderNode.prototype.setTexture = function( _img ){
 	gl.bindTexture( gl.TEXTURE_2D, shaderNode.texture );
   gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, _img );
   gl.bindTexture( gl.TEXTURE_2D, null );
+
+};
+
+Nightbird.ShaderNode.prototype.setParameter = function( _param ){
+
+	var shaderNode = this;
+
+	shaderNode.parameter = _param;
 
 };
 
