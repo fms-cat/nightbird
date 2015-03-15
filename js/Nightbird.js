@@ -22,6 +22,7 @@ var Nightbird = function(){
 	nightbird.links = [];
 	nightbird.contextMenus = [];
 
+	nightbird.operateNode = null;
 	nightbird.grabNode = null;
 	nightbird.grabLink = null;
 	nightbird.selectContextMenu = null;
@@ -63,7 +64,9 @@ var Nightbird = function(){
 			for( var i=nightbird.nodes.length-1; 0<=i; i-- ){
 				var node = nightbird.nodes[i];
 				if( 0 <= mx-node.posX && mx-node.posX < node.width && 0 <= my-node.posY && my-node.posY < node.height ){
-					if(	typeof node.operate != 'function' || !node.operate( mx-node.posX, my-node.posY ) ){
+					if(	typeof node.operateDown == 'function' && node.operateDown( mx-node.posX, my-node.posY ) ){
+						nightbird.operateNode = node;
+					}else{
 						nightbird.grabOffsetX = mx-node.posX;
 						nightbird.grabOffsetY = my-node.posY;
 						nightbird.grabNode = node;
@@ -145,6 +148,11 @@ var Nightbird = function(){
 				nightbird.selectContextMenu = null;
 				nightbird.contextMenus = [];
 				nightbird.contextTargets = [];
+			}
+
+			if( nightbird.operateNode && typeof nightbird.operateNode.operateUp == 'function' ){
+				nightbird.operateNode.operateUp();
+				nightbird.operateNode = null;
 			}
 
 			if( nightbird.grabNode ){
@@ -289,7 +297,7 @@ var Nightbird = function(){
 
 					for( var i=0; i<multipleContextMenus.length; i++ ){
 						var contextMenu = multipleContextMenus[i]();
-						contextMenu.move( x1, y1+i*16 );
+						contextMenu.move( x, y+i*16 );
 						nightbird.contextMenus.push( contextMenu );
 					}
 				}
@@ -311,6 +319,12 @@ var Nightbird = function(){
 
 		var mx = _e.layerX;
 		var my = _e.layerY;
+
+		if( nightbird.operateNode && typeof nightbird.operateNode.operateMove == 'function' ){
+			var x = mx-nightbird.operateNode.posX;
+			var y = my-nightbird.operateNode.posY;
+			nightbird.operateNode.operateMove( x, y );
+		}
 
 		if( nightbird.selectContextMenu ){
 			var contextMenu = nightbird.selectContextMenu;
@@ -347,6 +361,10 @@ var Nightbird = function(){
 	nightbird.subWindow.document.body.appendChild( this.master.canvas );
 
 	var node = new Nightbird.ValueNode( nightbird );
+	nightbird.nodes.push( node );
+	var node = new Nightbird.TimeNode( nightbird );
+	nightbird.nodes.push( node );
+	var node = new Nightbird.FormulaNode( nightbird );
 	nightbird.nodes.push( node );
 
 	document.body.appendChild( nightbird.modular );
