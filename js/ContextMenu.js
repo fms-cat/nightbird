@@ -40,7 +40,7 @@ Nightbird.ContextMenu.prototype.draw = function(){
 	contextMenu.nightbird.modularContext.fillRect( contextMenu.posX, contextMenu.posY, contextMenu.width, contextMenu.height );
 	if( contextMenu.selected ){
 		contextMenu.nightbird.modularContext.fillStyle = '#444';
-		contextMenu.nightbird.modularContext.fillRect( contextMenu.posX+1.5, contextMenu.posY+1.5, contextMenu.width-3, contextMenu.height-3 );
+		contextMenu.nightbird.modularContext.fillRect( contextMenu.posX+2, contextMenu.posY+2, contextMenu.width-4, contextMenu.height-4 );
 		contextMenu.nightbird.modularContext.fillStyle = '#aaa';
 	}else{
 		contextMenu.nightbird.modularContext.fillStyle = '#444';

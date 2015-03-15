@@ -6,12 +6,13 @@ Nightbird.ShaderNode = function( _nightbird, _file ){
 	var shaderNode = this;
 
 	Nightbird.Node.call( shaderNode, _nightbird );
-	shaderNode.playing = true;
 	shaderNode.name = _file.name;
+	shaderNode.width = 100;
+	shaderNode.height = 100*shaderNode.nightbird.height/shaderNode.nightbird.width;
 
 	shaderNode.canvas = document.createElement( 'canvas' );
-	shaderNode.canvas.width = 512;
-	shaderNode.canvas.height = 512;
+	shaderNode.canvas.width = shaderNode.nightbird.width;
+	shaderNode.canvas.height = shaderNode.nightbird.height;
 
 	shaderNode.gl = shaderNode.canvas.getContext( 'webgl' );
 	var gl = shaderNode.gl;
@@ -40,19 +41,12 @@ Nightbird.ShaderNode = function( _nightbird, _file ){
 
 	var outputCanvas = new Nightbird.Connector( shaderNode.nightbird, true, 'canvas' );
 	outputCanvas.setName( 'output' );
-	outputCanvas.transferData = shaderNode.canvas;
+	outputCanvas.onTransfer = function(){
+		return shaderNode.canvas;
+	};
 	shaderNode.outputs.push( outputCanvas );
 
 	shaderNode.move();
-
-	shaderNode.contextMenus.unshift( function(){
-		var contextMenu = new Nightbird.ContextMenu( shaderNode.nightbird );
-		contextMenu.setName( 'Play / Stop' );
-		contextMenu.onClick = function(){
-			shaderNode.playing = !shaderNode.playing;
-		};
-		return contextMenu;
-	} );
 
 };
 
@@ -147,16 +141,6 @@ Nightbird.ShaderNode.prototype.loadGlsl = function( _file ){
 
 };
 
-Nightbird.ShaderNode.prototype.setSize = function( _w, _h ){
-
-	var shaderNode = this;
-
-	Node.prototype.setSize.call( shaderNode, _hightbird, _file );
-
-	shaderNode.gl.viewport( 0, 0, _w, _h );
-
-};
-
 Nightbird.ShaderNode.prototype.setTexture = function( _i, _img ){
 
 	var shaderNode = this;
@@ -180,7 +164,7 @@ Nightbird.ShaderNode.prototype.draw = function(){
 
 	var shaderNode = this;
 
-	if( shaderNode.playing ){
+	if( shaderNode.active ){
 
 		var gl = shaderNode.gl;
 
@@ -204,6 +188,8 @@ Nightbird.ShaderNode.prototype.draw = function(){
 			  gl.bindTexture( gl.TEXTURE_2D, shaderNode.textures[i] );
 				gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR );
 				gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 			  gl.uniform1i( gl.getUniformLocation( shaderNode.program, 'texture'+i ), i );
 			}
 		}
@@ -214,7 +200,7 @@ Nightbird.ShaderNode.prototype.draw = function(){
 
 	}
 
-	shaderNode.nightbird.modularContext.drawImage( shaderNode.canvas, shaderNode.posX, shaderNode.posY, 100, 100 );
+	shaderNode.nightbird.modularContext.drawImage( shaderNode.canvas, shaderNode.posX, shaderNode.posY, shaderNode.width, shaderNode.height );
 
 	Nightbird.Node.prototype.draw.call( shaderNode );
 

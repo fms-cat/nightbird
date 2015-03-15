@@ -4,12 +4,13 @@ Nightbird.MasterNode = function( _nightbird ){
 
 	Nightbird.Node.call( masterNode, _nightbird );
 
-	masterNode.nightbird = _nightbird;
 	masterNode.name = 'Master';
+	masterNode.width = 160;
+	masterNode.height = 160*masterNode.nightbird.height/masterNode.nightbird.width;
 
 	masterNode.canvas = document.createElement( 'canvas' );
-	masterNode.canvas.width = 512;
-	masterNode.canvas.height = 512;
+	masterNode.canvas.width = masterNode.nightbird.width;
+	masterNode.canvas.height = masterNode.nightbird.height;
 
 	masterNode.input = null;
 
@@ -32,13 +33,15 @@ Nightbird.MasterNode.prototype.draw = function(){
 
 	var masterNode = this;
 
-	if( masterNode.input ){
-		masterNode.context.drawImage( masterNode.input, 0, 0, masterNode.canvas.width, masterNode.canvas.height );
-	}else{
-		masterNode.context.fillRect( 0, 0, masterNode.canvas.width, masterNode.canvas.height );
+	if( masterNode.active ){
+		if( masterNode.input ){
+			masterNode.context.drawImage( masterNode.input, 0, 0, masterNode.canvas.width, masterNode.canvas.height );
+		}else{
+			masterNode.context.fillRect( 0, 0, masterNode.canvas.width, masterNode.canvas.height );
+		}
 	}
 
-	masterNode.nightbird.modularContext.drawImage( masterNode.canvas, masterNode.posX, masterNode.posY, 100, 100 );
+	masterNode.nightbird.modularContext.drawImage( masterNode.canvas, masterNode.posX, masterNode.posY, masterNode.width, masterNode.height );
 
 	Nightbird.Node.prototype.draw.call( masterNode );
 

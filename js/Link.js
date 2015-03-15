@@ -51,7 +51,7 @@ Nightbird.Link.prototype.transfer = function(){
 
 	var link = this;
 
-	link.end.onTransfer( link.start.transferData );
+	link.end.onTransfer( link.start.onTransfer() );
 
 };
 
