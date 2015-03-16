@@ -6,10 +6,11 @@
 		<meta name="viewport" content="width=device-width,initial-scale=0.5,minimum-scale=0.5,maximum-scale=2.0,user-scalable=yes">
 		<title></title>
 		<style>
-			*
+			body
 			{
 				margin : 0;
 				padding : 0;
+				overflow : hidden;
 			}
 
 			.board
@@ -34,9 +35,8 @@
 		<script src="js/FormulaNode.js"></script>
 		<script>
 
-			var nightbird = new Nightbird();
+			var nightbird = new Nightbird( 512, 512/16*9 );
 			nightbird.setModularSize( 1024, 1024 );
-			document.body.appendChild( nightbird.input );
 
 			function loop(){
 
@@ -45,6 +45,16 @@
 				requestAnimationFrame( loop );
 			}
 			requestAnimationFrame( loop );
+
+			function resize(){
+
+				var w = window.innerWidth;
+				var h = window.innerHeight;
+				nightbird.setModularSize( w, h );
+
+			}
+			resize();
+			window.onresize = resize;
 
 		</script>
 	</body>

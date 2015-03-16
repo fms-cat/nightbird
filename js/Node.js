@@ -72,16 +72,16 @@ Nightbird.Node.prototype.disconnect = function(){
 
 	for( var i=0; i<node.inputs.length; i++ ){
 		var connector = node.inputs[i];
-		if( connector.link ){
-			node.nightbird.links.splice( node.nightbird.links.indexOf( connector.link ), 1 );
-			connector.link.remove();
+		for( var il=connector.links.length-1; 0<=il; il-- ){
+			node.nightbird.links.splice( node.nightbird.links.indexOf( connector.links[i] ), 1 );
+			connector.links[i].remove();
 		}
 	}
 	for( var i=0; i<node.outputs.length; i++ ){
 		var connector = node.outputs[i];
-		for( var il=connector.link.length-1; 0<=il; il-- ){
-			node.nightbird.links.splice( node.nightbird.links.indexOf( connector.link[i] ), 1 );
-			connector.link[i].remove();
+		for( var il=connector.links.length-1; 0<=il; il-- ){
+			node.nightbird.links.splice( node.nightbird.links.indexOf( connector.links[i] ), 1 );
+			connector.links[i].remove();
 		}
 	}
 

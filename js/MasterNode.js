@@ -24,10 +24,37 @@ Nightbird.MasterNode = function( _nightbird ){
 	masterNode.inputs.push( inputCanvas );
 	masterNode.move();
 
+	masterNode.contextMenus.pop();
+	masterNode.contextMenus.unshift( function(){
+		var contextMenu = new Nightbird.ContextMenu( masterNode.nightbird );
+		contextMenu.setName( 'Open master window' );
+		contextMenu.onClick = function(){
+			var subWindow = window.open( 'about:blank', 'sub', 'width='+nightbird.width+',height='+nightbird.height+',menubar=no' );
+			subWindow.document.body.style.padding = 0;
+			subWindow.document.body.style.margin = 0;
+			subWindow.document.body.style.overflow = 'hidden';
+			
+			subWindow.document.body.appendChild( nightbird.master.canvas );
+			subWindow.onresize = function(){
+				nightbird.master.canvas.style.width = subWindow.innerWidth;
+				nightbird.master.canvas.style.height = subWindow.innerHeight;
+			};
+		};
+		return contextMenu;
+	} );
+
 };
 
 Nightbird.MasterNode.prototype = Object.create( Nightbird.Node.prototype );
 Nightbird.MasterNode.prototype.constructor = Nightbird.MasterNode;
+
+Nightbird.MasterNode.prototype.remove = function(){
+
+	var masterNode = this;
+
+	masterNode.disconnect();
+
+};
 
 Nightbird.MasterNode.prototype.draw = function(){
 

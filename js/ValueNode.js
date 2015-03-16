@@ -7,7 +7,7 @@ Nightbird.ValueNode = function( _nightbird ){
 	valueNode.width = 100;
 	valueNode.height = 30;
 
-	valueNode.value = 0.3;
+	valueNode.value = 0;
 
 	var outputValue = new Nightbird.Connector( valueNode.nightbird, true, 'number' );
 	outputValue.setName( 'value' );
@@ -70,11 +70,11 @@ Nightbird.ValueNode.prototype.draw = function(){
 	valueNode.nightbird.modularContext.fillStyle = '#333';
 	valueNode.nightbird.modularContext.fillRect( valueNode.posX, valueNode.posY, valueNode.width, valueNode.height );
 	valueNode.nightbird.modularContext.fillStyle = valueNode.operate ? '#777' : '#555';
-	valueNode.nightbird.modularContext.fillRect( valueNode.posX+valueNode.width/2-30, valueNode.posY+10+(valueNode.height-10)/2-6, 60, 12 );
+	valueNode.nightbird.modularContext.fillRect( valueNode.posX+20, valueNode.posY+14, 60, 12 );
 	valueNode.nightbird.modularContext.fillStyle = '#ddd';
 	valueNode.nightbird.modularContext.textAlign = 'center';
 	valueNode.nightbird.modularContext.textBaseline = 'middle';
-	valueNode.nightbird.modularContext.fillText( valueNode.value.toFixed(3), valueNode.posX+valueNode.width/2, valueNode.posY+10+(valueNode.height-10)/2 );
+	valueNode.nightbird.modularContext.fillText( valueNode.value.toFixed(3), valueNode.posX+50, valueNode.posY+20 );
 
 	Nightbird.Node.prototype.draw.call( valueNode );
 

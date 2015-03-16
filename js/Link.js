@@ -10,6 +10,7 @@ Nightbird.Link = function( _nightbird, _connector ){
 	link.grabY = 0;
 	link.start = null;
 	link.end = null;
+
 	if( _connector.isOutput ){
 		link.start = _connector;
 		link.grabX = _connector.posX;
@@ -21,6 +22,7 @@ Nightbird.Link = function( _nightbird, _connector ){
 		link.grabY = _connector.posY;
 		link.grabStart = true;
 	}
+
 	link.type = _connector.type;
 
 };
@@ -38,6 +40,7 @@ Nightbird.Link.prototype.remove = function(){
 
 	var link = this;
 
+	link.end.onTransfer( null );
 	if( link.start ){
 		link.start.removeLink( link );
 	}

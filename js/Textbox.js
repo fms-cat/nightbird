@@ -8,12 +8,16 @@ Nightbird.Textbox = function( _nightbird, _default, _onEnter ){
 	textbox.posX = 0;
 	textbox.posY = 0;
 	textbox.width = 80;
-	textbox.height = 16;
+	textbox.height = 12;
 
 	textbox.input = document.createElement( 'input' );
 	textbox.input.value = _default;
 	textbox.input.type = 'text';
 	textbox.input.style.position = 'absolute';
+	textbox.input.style.border = 'none';
+	textbox.input.style.background = '#aaa';
+	textbox.input.style.color = '#444';
+	textbox.input.style.fontSize = '8px';
 	textbox.input.style.left = textbox.posX+'px';
 	textbox.input.style.top = textbox.posY+'px';
 	textbox.input.style.width = textbox.width+'px';
@@ -46,15 +50,15 @@ Nightbird.Textbox.prototype.move = function( _x, _y ){
 
 };
 
-Nightbird.Textbox.prototype.resize = function( _w, _h ){
+Nightbird.Textbox.prototype.setSize = function( _w, _h ){
 
 	var textbox = this;
 
 	textbox.width = _w;
 	textbox.height = _h;
 
-	textbox.input.style.left = textbox.width+'px';
-	textbox.input.style.top = textbox.height+'px';
+	textbox.input.style.width = textbox.width+'px';
+	textbox.input.style.height = textbox.height+'px';
 
 };
 

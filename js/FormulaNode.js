@@ -27,9 +27,8 @@ Nightbird.FormulaNode = function( _nightbird ){
 		}( v ) );
 		formulaNode.inputs.push( input );
 	}
-	console.log(formulaNode.inputs);
 	var outputValue = new Nightbird.Connector( formulaNode.nightbird, true, 'number' );
-	outputValue.setName( 'value' );
+	outputValue.setName( 'result' );
 	outputValue.onTransfer = function(){
 		return Number( formulaNode.output );
 	};
@@ -74,6 +73,12 @@ Nightbird.FormulaNode.prototype.interpret = function( _str ){
 			return 0;
 		}
 	}
+	if( typeof result != 'number' ){
+		formulaNode.error = 'formula returns '+(typeof result);
+		return function(x,y,z,w){
+			return 0;
+		}
+	}
 	formulaNode.error = null;
 	return func;
 
@@ -90,6 +95,7 @@ Nightbird.FormulaNode.prototype.operateDown = function( _x, _y ){
 				formulaNode.func = formulaNode.interpret( _value );
 			} );
 			formulaNode.nightbird.textbox.move( formulaNode.posX+_x, formulaNode.posY+_y );
+			formulaNode.nightbird.textbox.setSize( 160, 12 );
 		}else{
 			formulaNode.lastClick = formulaNode.nightbird.time;
 			formulaNode.operate = true;
@@ -115,6 +121,7 @@ Nightbird.FormulaNode.prototype.draw = function(){
 
 	if( formulaNode.active ){
 		formulaNode.output = formulaNode.func( formulaNode.param.x, formulaNode.param.y, formulaNode.param.z, formulaNode.param.w );
+		if( isNaN( formulaNode.output ) ){ formulaNode.output = 0; }
 	}
 
 	formulaNode.nightbird.modularContext.fillStyle = '#333';
