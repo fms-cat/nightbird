@@ -12,6 +12,8 @@ var Nightbird = function( _w, _h ){
 	it.links = [];
 	it.contextMenus = [];
 
+	it.mouseX = 0;
+	it.mouseY = 0;
 	it.operateNode = null;
 	it.grabNode = null;
 	it.grabLinks = [];
@@ -54,6 +56,9 @@ var Nightbird = function( _w, _h ){
 
 		_e.preventDefault();
 
+		it.mouseX = _e.layerX;
+		it.mouseY = _e.layerY;
+
 		if( it.textbox ){
 			it.textbox.remove();
 		}
@@ -70,6 +75,9 @@ var Nightbird = function( _w, _h ){
 
 		_e.preventDefault();
 
+		it.mouseX = _e.layerX;
+		it.mouseY = _e.layerY;
+
 		if( _e.which == 1 ){
 			it.mouseup1( _e );
 		}else if( _e.which == 3 ){
@@ -82,6 +90,9 @@ var Nightbird = function( _w, _h ){
 
 		_e.preventDefault();
 
+		it.mouseX = _e.layerX;
+		it.mouseY = _e.layerY;
+
 		it.mousemove( _e );
 
 	}, false );
@@ -91,6 +102,9 @@ var Nightbird = function( _w, _h ){
 		_e.stopPropagation();
 	  _e.preventDefault();
 
+		it.mouseX = _e.layerX;
+		it.mouseY = _e.layerY;
+
 		it.dragover( _e );
 
 	}, false );
@@ -99,6 +113,9 @@ var Nightbird = function( _w, _h ){
 
 		_e.stopPropagation();
 	  _e.preventDefault();
+
+		it.mouseX = _e.layerX;
+		it.mouseY = _e.layerY;
 
 		it.drop( _e );
 
@@ -125,13 +142,10 @@ Nightbird.prototype.mousedown1 = function( _e ){
 
 	var it = this;
 
-	var mx = _e.layerX;
-	var my = _e.layerY;
-
 	// contextMenuのクリック判定
 	for( var i=0; i<it.contextMenus.length; i++ ){
 		var contextMenu = it.contextMenus[i];
-		if( 0 <= mx-contextMenu.posX && mx-contextMenu.posX < contextMenu.width && 0 <= my-contextMenu.posY && my-contextMenu.posY < contextMenu.height ){
+		if( 0 <= it.mouseX-contextMenu.posX && it.mouseX-contextMenu.posX < contextMenu.width && 0 <= it.mouseY-contextMenu.posY && it.mouseY-contextMenu.posY < contextMenu.height ){
 			it.selectContextMenu = contextMenu;
 			contextMenu.selected = true;
 			return;
@@ -143,16 +157,16 @@ Nightbird.prototype.mousedown1 = function( _e ){
 		var node = it.nodes[i];
 
 		// nodeのクリック（移動開始）
-		if( 0 <= mx-node.posX && mx-node.posX < node.width && 0 <= my-node.posY && my-node.posY < node.height ){
+		if( 0 <= it.mouseX-node.posX && it.mouseX-node.posX < node.width && 0 <= it.mouseY-node.posY && it.mouseY-node.posY < node.height ){
 			// もし操作可能箇所だったら操作
-			if(	typeof node.operateDown == 'function' && it.targets.indexOf( node ) == -1 && node.operateDown( mx-node.posX, my-node.posY ) ){
+			if(	typeof node.operateDown == 'function' && it.targets.indexOf( node ) == -1 && node.operateDown( it.mouseX-node.posX, it.mouseY-node.posY ) ){
 				it.operateNode = node;
 			}else{
 				if( it.targets.indexOf( node ) == -1 ){
 					it.targets = [];
 				}
-				it.grabOffsetX = mx-node.posX;
-				it.grabOffsetY = my-node.posY;
+				it.grabOffsetX = it.mouseX-node.posX;
+				it.grabOffsetY = it.mouseY-node.posY;
 				it.grabNode = node;
 				it.grabTime = it.time;
 				it.nodes.push( it.nodes.splice( i, 1 )[0] );
@@ -163,7 +177,7 @@ Nightbird.prototype.mousedown1 = function( _e ){
 		// nodeのinputのクリック（link開始）
 		for( var ic=0; ic<node.inputs.length; ic++ ){
 			var connector = node.inputs[ic];
-			if( dist( connector.posX, connector.posY, mx, my ) < connector.radius ){
+			if( dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
 				var link = new Nightbird.Link( it, connector );
 				it.links.push( link );
 				it.grabLinks.push( link );
@@ -175,7 +189,7 @@ Nightbird.prototype.mousedown1 = function( _e ){
 		// nodeのoutputのクリック（link開始）
 		for( var ic=0; ic<node.outputs.length; ic++ ){
 			var connector = node.outputs[ic];
-			if( dist( connector.posX, connector.posY, mx, my ) < connector.radius ){
+			if( dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
 				var link = new Nightbird.Link( it, connector );
 				it.links.push( link );
 				it.grabLinks.push( link );
@@ -188,10 +202,10 @@ Nightbird.prototype.mousedown1 = function( _e ){
 	// 空の場所でのクリック（範囲選択開始）
 	it.targets = [];
 	it.multipleRect = true;
-	it.multipleRectX1 = mx;
-	it.multipleRectY1 = my;
-	it.multipleRectX2 = mx;
-	it.multipleRectY2 = my;
+	it.multipleRectX1 = it.mouseX;
+	it.multipleRectY1 = it.mouseY;
+	it.multipleRectX2 = it.mouseX;
+	it.multipleRectY2 = it.mouseY;
 
 	function dist( _x1, _y1, _x2, _y2 ){
 		return Math.sqrt( (_x2-_x1)*(_x2-_x1)+(_y2-_y1)*(_y2-_y1) );
@@ -203,9 +217,6 @@ Nightbird.prototype.mousedown3 = function( _e ){
 
 	var it = this;
 
-	var mx = _e.layerX;
-	var my = _e.layerY;
-
 	it.contextMenus = [];
 
 	for( var i=it.nodes.length-1; 0<=i; i-- ){
@@ -214,7 +225,7 @@ Nightbird.prototype.mousedown3 = function( _e ){
 		// nodeのinputの右クリック
 		for( var ic=0; ic<node.inputs.length; ic++ ){
 			var connector = node.inputs[ic];
-			if( dist( connector.posX, connector.posY, mx, my ) < connector.radius && connector.links.length ){
+			if( dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius && connector.links.length ){
 				for( var i=connector.links.length-1; 0<=i; i-- ){
 					it.movingLinks.push( connector.links[i] );
 					var link = new Nightbird.Link( it, connector.links[i].start );
@@ -229,7 +240,7 @@ Nightbird.prototype.mousedown3 = function( _e ){
 		// nodeのoutputの右クリック
 		for( var ic=0; ic<node.outputs.length; ic++ ){
 			var connector = node.outputs[ic];
-			if( dist( connector.posX, connector.posY, mx, my ) < connector.radius && 0 < connector.links.length ){
+			if( dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius && 0 < connector.links.length ){
 				for( var i=connector.links.length-1; 0<=i; i-- ){
 					it.movingLinks.push( connector.links[i] );
 					var link = new Nightbird.Link( it, connector.links[i].end );
@@ -253,9 +264,6 @@ Nightbird.prototype.mouseup1 = function( _e ){
 
 	var it = this;
 
-	var mx = _e.layerX;
-	var my = _e.layerY;
-
 	// contextMenuのクリック完了
 	if( it.selectContextMenu ){
 		var contextMenu = it.selectContextMenu;
@@ -267,7 +275,7 @@ Nightbird.prototype.mouseup1 = function( _e ){
 
 	// nodeの操作完了
 	if( it.operateNode && typeof it.operateNode.operateUp == 'function' ){
-		it.operateNode.operateUp( mx-it.operateNode.posX, my-it.operateNode.posY );
+		it.operateNode.operateUp( it.mouseX-it.operateNode.posX, it.mouseY-it.operateNode.posY );
 		it.operateNode = null;
 	}
 
@@ -287,7 +295,7 @@ Nightbird.prototype.mouseup1 = function( _e ){
 			if( link.grabStart ){
 				for( var ic=0; ic<node.outputs.length; ic++ ){
 					var connector = node.outputs[ic];
-					if( connector.type == link.type && dist( connector.posX, connector.posY, mx, my ) < connector.radius ){
+					if( connector.type == link.type && dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
 						if( link.end.links.length == 1 ){ // inputには1つしかlinkできない
 							it.links.splice( it.links.indexOf( link.end.links[0] ), 1 );
 							link.end.links[0].remove();
@@ -304,7 +312,7 @@ Nightbird.prototype.mouseup1 = function( _e ){
 			if( link.grabEnd ){
 				for( var ic=0; ic<node.inputs.length; ic++ ){
 					var connector = node.inputs[ic];
-					if( connector.type == link.type && dist( connector.posX, connector.posY, mx, my ) < connector.radius ){
+					if( connector.type == link.type && dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
 						if( connector.links.length == 1 ){ // inputには1つしかlinkできない
 							it.links.splice( it.links.indexOf( connector.links[0] ), 1 );
 							connector.links[0].remove();
@@ -365,11 +373,6 @@ Nightbird.prototype.mouseup3 = function( _e ){
 
 	var it = this;
 
-	var mx = _e.layerX;
-	var my = _e.layerY;
-
-
-
 	if( 0 < it.grabLinks.length ){
 
 		if( it.time-it.grabTime < .3 ){ // すぐ離した場合リンクを消去
@@ -397,7 +400,7 @@ Nightbird.prototype.mouseup3 = function( _e ){
 				if( links[0].grabStart ){
 					for( var ic=0; ic<node.outputs.length; ic++ ){
 						var connector = node.outputs[ic];
-						if( connector.type == links[0].type && dist( connector.posX, connector.posY, mx, my ) < connector.radius ){
+						if( connector.type == links[0].type && dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
 							for( var link of links ){
 								link.start = connector;
 								connector.setLink( link );
@@ -417,7 +420,7 @@ Nightbird.prototype.mouseup3 = function( _e ){
 				if( links[0].grabEnd ){
 					for( var ic=0; ic<node.inputs.length; ic++ ){
 						var connector = node.inputs[ic];
-						if( connector.type == links[0].type && dist( connector.posX, connector.posY, mx, my ) < connector.radius ){
+						if( connector.type == links[0].type && dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
 							if( connector.link ){
 								it.links.splice( it.links.indexOf( connector.link ), 1 );
 								connector.link.remove();
@@ -453,13 +456,13 @@ Nightbird.prototype.mouseup3 = function( _e ){
 		for( var i=it.nodes.length-1; 0<=i; i-- ){
 			var node = it.nodes[i];
 
-			if( 0 <= mx-node.posX && mx-node.posX < node.width && 0 <= my-node.posY && my-node.posY < node.height ){
+			if( 0 <= it.mouseX-node.posX && it.mouseX-node.posX < node.width && 0 <= it.mouseY-node.posY && it.mouseY-node.posY < node.height ){
 				// 範囲選択されたnodeか、それ以外か
 				if( it.targets.indexOf( node ) == -1 ){
 					it.targets = [];
 					for( var i=0; i<node.contextMenus.length; i++ ){
 						var contextMenu = node.contextMenus[i]();
-						contextMenu.move( mx, my+i*16 );
+						contextMenu.move( it.mouseX, it.mouseY+i*16 );
 						it.contextMenus.push( contextMenu );
 					}
 					return;
@@ -515,7 +518,7 @@ Nightbird.prototype.mouseup3 = function( _e ){
 					for( var i=0; i<multipleContextMenus.length; i++ ){
 						var contextMenu = multipleContextMenus[i]();
 						it.contextMenus.push( contextMenu );
-						contextMenu.move( mx, my+i*16 );
+						contextMenu.move( it.mouseX, it.mouseY+i*16 );
 					}
 
 					return;
@@ -535,7 +538,7 @@ Nightbird.prototype.mouseup3 = function( _e ){
 			contextMenu.onClick = function(){
 				var node = new Nightbird.ValueNode( it );
 				it.nodes.push( node );
-				node.move( mx, my );
+				node.move( it.mouseX, it.mouseY );
 			};
 			return contextMenu;
 		} );
@@ -545,7 +548,7 @@ Nightbird.prototype.mouseup3 = function( _e ){
 			contextMenu.onClick = function(){
 				var node = new Nightbird.TimeNode( it );
 				it.nodes.push( node );
-				node.move( mx, my );
+				node.move( it.mouseX, it.mouseY );
 			};
 			return contextMenu;
 		} );
@@ -555,7 +558,7 @@ Nightbird.prototype.mouseup3 = function( _e ){
 			contextMenu.onClick = function(){
 				var node = new Nightbird.FormulaNode( it );
 				it.nodes.push( node );
-				node.move( mx, my );
+				node.move( it.mouseX, it.mouseY );
 			};
 			return contextMenu;
 		} );
@@ -571,7 +574,7 @@ Nightbird.prototype.mouseup3 = function( _e ){
 		for( var i=0; i<contextMenus.length; i++ ){
 			var contextMenu = contextMenus[i]();
 			it.contextMenus.push( contextMenu );
-			contextMenu.move( mx, my+i*16 );
+			contextMenu.move( it.mouseX, it.mouseY+i*16 );
 		}
 
 	}
@@ -586,12 +589,9 @@ Nightbird.prototype.mousemove = function( _e ){
 
 	var it = this;
 
-	var mx = _e.layerX;
-	var my = _e.layerY;
-
 	if( it.selectContextMenu ){
 		var contextMenu = it.selectContextMenu;
-		if( 0 <= mx-contextMenu.posX && mx-contextMenu.posX < contextMenu.width && 0 <= my-contextMenu.posY && my-contextMenu.posY < contextMenu.height ){
+		if( 0 <= it.mouseX-contextMenu.posX && it.mouseX-contextMenu.posX < contextMenu.width && 0 <= it.mouseY-contextMenu.posY && it.mouseY-contextMenu.posY < contextMenu.height ){
 		}else{
 			it.selectContextMenu.selected = false;
 			it.selectContextMenu = null;
@@ -599,8 +599,8 @@ Nightbird.prototype.mousemove = function( _e ){
 	}
 
 	if( it.operateNode && typeof it.operateNode.operateMove == 'function' ){
-		var x = mx-it.operateNode.posX;
-		var y = my-it.operateNode.posY;
+		var x = it.mouseX-it.operateNode.posX;
+		var y = it.mouseY-it.operateNode.posY;
 		it.operateNode.operateMove( x, y );
 	}
 
@@ -608,21 +608,21 @@ Nightbird.prototype.mousemove = function( _e ){
 		for( var i=0; i<it.targets.length; i++ ){
 			var target = it.targets[i];
 			if( target != it.grabNode ){
-				var deltaX = mx-it.grabOffsetX-it.grabNode.posX;
-				var deltaY = my-it.grabOffsetY-it.grabNode.posY;
+				var deltaX = it.mouseX-it.grabOffsetX-it.grabNode.posX;
+				var deltaY = it.mouseY-it.grabOffsetY-it.grabNode.posY;
 				target.move( target.posX+deltaX, target.posY+deltaY );
 			}
 		}
-		it.grabNode.move( mx-it.grabOffsetX, my-it.grabOffsetY );
+		it.grabNode.move( it.mouseX-it.grabOffsetX, it.mouseY-it.grabOffsetY );
 	}
 
 	for( var link of it.grabLinks ){
-		link.move( mx, my );
+		link.move( it.mouseX, it.mouseY );
 	}
 
 	if( it.multipleRect ){
-		it.multipleRectX2 = mx;
-		it.multipleRectY2 = my;
+		it.multipleRectX2 = it.mouseX;
+		it.multipleRectY2 = it.mouseY;
 	}
 
 };
@@ -659,11 +659,11 @@ Nightbird.prototype.loadFiles = function( _files ){
 		if( ext == 'glsl' ){
 			var node = new Nightbird.ShaderNode( it, file );
 			it.nodes.push( node );
-			node.move( it.modular.width/2-70+(i%8)*10, it.modular.height/2-70+(i%8)*10 );
+			node.move( it.mouseX+(i%8)*10, it.mouseY+(i%8)*10 );
 		}else if( ext == 'gif' ){
 			var node = new Nightbird.GifNode( it, file );
 			it.nodes.push( node );
-			node.move( it.modular.width/2-70+(i%8)*10, it.modular.height/2-70+(i%8)*10 );
+			node.move( it.mouseX+(i%8)*10, it.mouseY+(i%8)*10 );
 		}else{
 			console.error( file.name+' is unsupported extension' );
 		}

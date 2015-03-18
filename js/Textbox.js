@@ -67,6 +67,6 @@ Nightbird.Textbox.prototype.remove = function(){
 	var it = this;
 
 	document.body.removeChild( it.input );
-	it.nightbird.it = null;
+	it.nightbird.textbox = null;
 
 };
