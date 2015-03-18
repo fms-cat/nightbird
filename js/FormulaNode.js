@@ -1,39 +1,39 @@
 Nightbird.FormulaNode = function( _nightbird ){
 
-	var formulaNode = this;
+	var it = this;
 
-	Nightbird.Node.call( formulaNode, _nightbird );
-	formulaNode.name = 'Formula';
-	formulaNode.width = 200;
-	formulaNode.height = 45;
+	Nightbird.Node.call( it, _nightbird );
+	it.name = 'Formula';
+	it.width = 200;
+	it.height = 45;
 
-	formulaNode.str = 'x + y + z + w';
-	formulaNode.func = formulaNode.interpret( formulaNode.str );
-	formulaNode.param = {};
-	formulaNode.param.x = 0;
-	formulaNode.param.y = 0;
-	formulaNode.param.z = 0;
-	formulaNode.param.w = 0;
-	formulaNode.output = 0;
-	formulaNode.error = '';
+	it.str = 'x + y + z + w';
+	it.func = it.interpret( it.str );
+	it.param = {};
+	it.param.x = 0;
+	it.param.y = 0;
+	it.param.z = 0;
+	it.param.w = 0;
+	it.output = 0;
+	it.error = '';
 
 	for( var v of ['x','y','z','w'] ){
-		var input = new Nightbird.Connector( formulaNode.nightbird, false, 'number' );
+		var input = new Nightbird.Connector( it.nightbird, false, 'number' );
 		input.setName( v );
 		input.onTransfer = ( function( _v ){
 			return function( _data ){
-				formulaNode.param[ _v ] = _data;
+				it.param[ _v ] = _data;
 			};
 		}( v ) );
-		formulaNode.inputs.push( input );
+		it.inputs.push( input );
 	}
-	var outputValue = new Nightbird.Connector( formulaNode.nightbird, true, 'number' );
+	var outputValue = new Nightbird.Connector( it.nightbird, true, 'number' );
 	outputValue.setName( 'result' );
 	outputValue.onTransfer = function(){
-		return Number( formulaNode.output );
+		return Number( it.output );
 	};
-	formulaNode.outputs.push( outputValue );
-	formulaNode.move();
+	it.outputs.push( outputValue );
+	it.move();
 
 };
 
@@ -42,7 +42,7 @@ Nightbird.FormulaNode.prototype.constructor = Nightbird.FormulaNode;
 
 Nightbird.FormulaNode.prototype.interpret = function( _str ){
 
-	var formulaNode = this;
+	var it = this;
 	var func;
 
 	try{
@@ -58,7 +58,7 @@ Nightbird.FormulaNode.prototype.interpret = function( _str ){
 			}() );\
 		' );
 	}catch( _e ){
-		formulaNode.error = _e.message;
+		it.error = _e.message;
 		return function(x,y,z,w){
 			return 0;
 		}
@@ -68,37 +68,37 @@ Nightbird.FormulaNode.prototype.interpret = function( _str ){
 	try{
 		result = func(0,0,0,0);
 	}catch( _e ){
-		formulaNode.error = _e.message;
+		it.error = _e.message;
 		return function(x,y,z,w){
 			return 0;
 		}
 	}
 	if( typeof result != 'number' ){
-		formulaNode.error = 'formula returns '+(typeof result);
+		it.error = 'formula returns '+(typeof result);
 		return function(x,y,z,w){
 			return 0;
 		}
 	}
-	formulaNode.error = '';
+	it.error = '';
 	return func;
 
 };
 
 Nightbird.FormulaNode.prototype.operateDown = function( _x, _y ){
 
-	var formulaNode = this;
+	var it = this;
 
 	if( Math.abs( 100-_x ) < 80 && Math.abs( 20-_y ) < 6 ){
-		if( formulaNode.lastClick && formulaNode.nightbird.time-formulaNode.lastClick < .3 ){
-			formulaNode.nightbird.textbox = new Nightbird.Textbox( formulaNode.nightbird, formulaNode.str, function( _value ){
-				formulaNode.str = _value;
-				formulaNode.func = formulaNode.interpret( _value );
+		if( it.lastClick && it.nightbird.time-it.lastClick < .3 ){
+			it.nightbird.textbox = new Nightbird.Textbox( it.nightbird, it.str, function( _value ){
+				it.str = _value;
+				it.func = it.interpret( _value );
 			} );
-			formulaNode.nightbird.textbox.move( formulaNode.posX+_x, formulaNode.posY+_y );
-			formulaNode.nightbird.textbox.setSize( 160, 12 );
+			it.nightbird.textbox.move( it.posX+_x, it.posY+_y );
+			it.nightbird.textbox.setSize( 160, 12 );
 		}else{
-			formulaNode.lastClick = formulaNode.nightbird.time;
-			formulaNode.operate = true;
+			it.lastClick = it.nightbird.time;
+			it.operate = true;
 		}
 		return true;
 	}else{
@@ -109,31 +109,31 @@ Nightbird.FormulaNode.prototype.operateDown = function( _x, _y ){
 
 Nightbird.FormulaNode.prototype.operateUp = function(){
 
-	var formulaNode = this;
+	var it = this;
 
-	formulaNode.operate = false;
+	it.operate = false;
 
 };
 
 Nightbird.FormulaNode.prototype.draw = function(){
 
-	var formulaNode = this;
+	var it = this;
 
-	if( formulaNode.active ){
-		formulaNode.output = formulaNode.func( formulaNode.param.x, formulaNode.param.y, formulaNode.param.z, formulaNode.param.w );
-		if( isNaN( formulaNode.output ) ){ formulaNode.output = 0; }
+	if( it.active ){
+		it.output = it.func( it.param.x, it.param.y, it.param.z, it.param.w );
+		if( isNaN( it.output ) ){ it.output = 0; }
 	}
 
-	formulaNode.nightbird.modularContext.fillStyle = '#333';
-	formulaNode.nightbird.modularContext.fillRect( formulaNode.posX, formulaNode.posY, formulaNode.width, formulaNode.height );
-	formulaNode.nightbird.modularContext.fillStyle = formulaNode.operate ? '#777' : '#555';
-	formulaNode.nightbird.modularContext.fillRect( formulaNode.posX+20, formulaNode.posY+14, 160, 12 );
-	formulaNode.nightbird.modularContext.fillStyle = formulaNode.error ? '#d27' : '#ddd';
-	formulaNode.nightbird.modularContext.textAlign = 'center';
-	formulaNode.nightbird.modularContext.textBaseline = 'middle';
-	formulaNode.nightbird.modularContext.fillText( formulaNode.str, formulaNode.posX+100, formulaNode.posY+20 );
-	formulaNode.nightbird.modularContext.fillText( formulaNode.error ? formulaNode.error : '= '+formulaNode.output.toFixed( 3 ), formulaNode.posX+100, formulaNode.posY+35 );
+	it.nightbird.modularContext.fillStyle = '#333';
+	it.nightbird.modularContext.fillRect( it.posX, it.posY, it.width, it.height );
+	it.nightbird.modularContext.fillStyle = it.operate ? '#777' : '#555';
+	it.nightbird.modularContext.fillRect( it.posX+20, it.posY+14, 160, 12 );
+	it.nightbird.modularContext.fillStyle = it.error ? '#d27' : '#ddd';
+	it.nightbird.modularContext.textAlign = 'center';
+	it.nightbird.modularContext.textBaseline = 'middle';
+	it.nightbird.modularContext.fillText( it.str, it.posX+100, it.posY+20 );
+	it.nightbird.modularContext.fillText( it.error ? it.error : '= '+it.output.toFixed( 3 ), it.posX+100, it.posY+35 );
 
-	Nightbird.Node.prototype.draw.call( formulaNode );
+	Nightbird.Node.prototype.draw.call( it );
 
 };

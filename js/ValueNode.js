@@ -1,21 +1,21 @@
 Nightbird.ValueNode = function( _nightbird ){
 
-	var valueNode = this;
+	var it = this;
 
-	Nightbird.Node.call( valueNode, _nightbird );
-	valueNode.name = 'Value';
-	valueNode.width = 100;
-	valueNode.height = 30;
+	Nightbird.Node.call( it, _nightbird );
+	it.name = 'Value';
+	it.width = 100;
+	it.height = 30;
 
-	valueNode.value = 0;
+	it.value = 0;
 
-	var outputValue = new Nightbird.Connector( valueNode.nightbird, true, 'number' );
+	var outputValue = new Nightbird.Connector( it.nightbird, true, 'number' );
 	outputValue.setName( 'value' );
 	outputValue.onTransfer = function(){
-		return Number( valueNode.value );
+		return Number( it.value );
 	};
-	valueNode.outputs.push( outputValue );
-	valueNode.move();
+	it.outputs.push( outputValue );
+	it.move();
 
 };
 
@@ -24,19 +24,19 @@ Nightbird.ValueNode.prototype.constructor = Nightbird.ValueNode;
 
 Nightbird.ValueNode.prototype.operateDown = function( _x, _y ){
 
-	var valueNode = this;
+	var it = this;
 
-	if( Math.abs( valueNode.width/2-_x ) < 30 && Math.abs( 10+(valueNode.height-10)/2-_y ) < 6 ){
-		if( valueNode.lastClick && valueNode.nightbird.time-valueNode.lastClick < .3 ){
-			valueNode.nightbird.textbox = new Nightbird.Textbox( valueNode.nightbird, valueNode.value, function( _value ){
-				valueNode.value = Number( _value );
+	if( Math.abs( it.width/2-_x ) < 30 && Math.abs( 10+(it.height-10)/2-_y ) < 6 ){
+		if( it.lastClick && it.nightbird.time-it.lastClick < .3 ){
+			it.nightbird.textbox = new Nightbird.Textbox( it.nightbird, it.value, function( _value ){
+				it.value = Number( _value );
 			} );
-			valueNode.nightbird.textbox.move( valueNode.posX+_x, valueNode.posY+_y );
+			it.nightbird.textbox.move( it.posX+_x, it.posY+_y );
 		}else{
-			valueNode.lastClick = valueNode.nightbird.time;
-			valueNode.operateBeginY = _y;
-			valueNode.operateBeginValue = valueNode.value;
-			valueNode.operate = true;
+			it.lastClick = it.nightbird.time;
+			it.operateBeginY = _y;
+			it.operateBeginValue = it.value;
+			it.operate = true;
 		}
 		return true;
 	}else{
@@ -47,35 +47,35 @@ Nightbird.ValueNode.prototype.operateDown = function( _x, _y ){
 
 Nightbird.ValueNode.prototype.operateMove = function( _x, _y ){
 
-	var valueNode = this;
+	var it = this;
 
-	if( valueNode.operate ){
-		valueNode.value = Number( ( valueNode.operateBeginValue+(valueNode.operateBeginY-_y)*.01 ).toFixed(3) );
+	if( it.operate ){
+		it.value = Number( ( it.operateBeginValue+(it.operateBeginY-_y)*.01 ).toFixed(3) );
 	}
 
 };
 
 Nightbird.ValueNode.prototype.operateUp = function(){
 
-	var valueNode = this;
+	var it = this;
 
-	valueNode.operate = false;
+	it.operate = false;
 
 };
 
 Nightbird.ValueNode.prototype.draw = function(){
 
-	var valueNode = this;
+	var it = this;
 
-	valueNode.nightbird.modularContext.fillStyle = '#333';
-	valueNode.nightbird.modularContext.fillRect( valueNode.posX, valueNode.posY, valueNode.width, valueNode.height );
-	valueNode.nightbird.modularContext.fillStyle = valueNode.operate ? '#777' : '#555';
-	valueNode.nightbird.modularContext.fillRect( valueNode.posX+20, valueNode.posY+14, 60, 12 );
-	valueNode.nightbird.modularContext.fillStyle = '#ddd';
-	valueNode.nightbird.modularContext.textAlign = 'center';
-	valueNode.nightbird.modularContext.textBaseline = 'middle';
-	valueNode.nightbird.modularContext.fillText( valueNode.value.toFixed(3), valueNode.posX+50, valueNode.posY+20 );
+	it.nightbird.modularContext.fillStyle = '#333';
+	it.nightbird.modularContext.fillRect( it.posX, it.posY, it.width, it.height );
+	it.nightbird.modularContext.fillStyle = it.operate ? '#777' : '#555';
+	it.nightbird.modularContext.fillRect( it.posX+20, it.posY+14, 60, 12 );
+	it.nightbird.modularContext.fillStyle = '#ddd';
+	it.nightbird.modularContext.textAlign = 'center';
+	it.nightbird.modularContext.textBaseline = 'middle';
+	it.nightbird.modularContext.fillText( it.value.toFixed(3), it.posX+50, it.posY+20 );
 
-	Nightbird.Node.prototype.draw.call( valueNode );
+	Nightbird.Node.prototype.draw.call( it );
 
 };

@@ -1,22 +1,22 @@
 Nightbird.TimeNode = function( _nightbird ){
 
-	var timeNode = this;
+	var it = this;
 
-	Nightbird.Node.call( timeNode, _nightbird );
-	timeNode.name = 'Time';
-	timeNode.width = 100;
-	timeNode.height = 50;
+	Nightbird.Node.call( it, _nightbird );
+	it.name = 'Time';
+	it.width = 100;
+	it.height = 50;
 
-	timeNode.begint = +new Date();
-	timeNode.time = 0;
+	it.begint = +new Date();
+	it.time = 0;
 
-	var outputValue = new Nightbird.Connector( timeNode.nightbird, true, 'number' );
+	var outputValue = new Nightbird.Connector( it.nightbird, true, 'number' );
 	outputValue.setName( 'time' );
 	outputValue.onTransfer = function(){
-		return Number( timeNode.time );
+		return Number( it.time );
 	};
-	timeNode.outputs.push( outputValue );
-	timeNode.move();
+	it.outputs.push( outputValue );
+	it.move();
 
 };
 
@@ -25,17 +25,17 @@ Nightbird.TimeNode.prototype.constructor = Nightbird.TimeNode;
 
 Nightbird.TimeNode.prototype.operateDown = function( _x, _y ){
 
-	var timeNode = this;
+	var it = this;
 
 	if( Math.abs( _x-30 ) < 19 && Math.abs( _y-38 ) < 6 ){
-		timeNode.operateNudge = true;
-		timeNode.operateBeginY = _y;
-		timeNode.operateBeginBegint = timeNode.begint;
+		it.operateNudge = true;
+		it.operateBeginY = _y;
+		it.operateBeginBegint = it.begint;
 		return true;
 	}
 	if( Math.abs( _x-70 ) < 19 && Math.abs( _y-38 ) < 6 ){
-		timeNode.operateReset = true;
-		timeNode.begint = +new Date();
+		it.operateReset = true;
+		it.begint = +new Date();
 		return true;
 	}
 	return false;
@@ -44,48 +44,48 @@ Nightbird.TimeNode.prototype.operateDown = function( _x, _y ){
 
 Nightbird.TimeNode.prototype.operateMove = function( _x, _y ){
 
-	var timeNode = this;
+	var it = this;
 
-	if( timeNode.operateNudge ){
-		timeNode.begint = timeNode.operateBeginBegint + _y-timeNode.operateBeginY;
+	if( it.operateNudge ){
+		it.begint = it.operateBeginBegint + _y-it.operateBeginY;
 	}
 
 };
 
 Nightbird.TimeNode.prototype.operateUp = function(){
 
-	var timeNode = this;
+	var it = this;
 
-	if( timeNode.operateNudge ){
-		timeNode.operateNudge = false;
+	if( it.operateNudge ){
+		it.operateNudge = false;
 	}
-	if( timeNode.operateReset ){
-		timeNode.operateReset = false;
+	if( it.operateReset ){
+		it.operateReset = false;
 	}
 
 };
 
 Nightbird.TimeNode.prototype.draw = function(){
 
-	var timeNode = this;
+	var it = this;
 
-	if( timeNode.active ){
-		timeNode.time = ( +new Date() - timeNode.begint )*1e-3;
+	if( it.active ){
+		it.time = ( +new Date() - it.begint )*1e-3;
 	}
 
-	timeNode.nightbird.modularContext.fillStyle = '#333';
-	timeNode.nightbird.modularContext.fillRect( timeNode.posX, timeNode.posY, timeNode.width, timeNode.height );
-	timeNode.nightbird.modularContext.fillStyle = timeNode.operateNudge ? '#777' : '#555';
-	timeNode.nightbird.modularContext.fillRect( timeNode.posX+11, timeNode.posY+32, 38, 12 );
-	timeNode.nightbird.modularContext.fillStyle = timeNode.operateReset ? '#777' : '#555';
-	timeNode.nightbird.modularContext.fillRect( timeNode.posX+51, timeNode.posY+32, 38, 12 );
-	timeNode.nightbird.modularContext.fillStyle = '#ddd';
-	timeNode.nightbird.modularContext.textAlign = 'center';
-	timeNode.nightbird.modularContext.textBaseline = 'middle';
-	timeNode.nightbird.modularContext.fillText( String( timeNode.time.toFixed(3) ), timeNode.posX+50, timeNode.posY+20 );
-	timeNode.nightbird.modularContext.fillText( timeNode.nudgeText ? timeNode.nudgeText : 'Nudge', timeNode.posX+30, timeNode.posY+38 );
-	timeNode.nightbird.modularContext.fillText( 'Reset', timeNode.posX+70, timeNode.posY+38 );
+	it.nightbird.modularContext.fillStyle = '#333';
+	it.nightbird.modularContext.fillRect( it.posX, it.posY, it.width, it.height );
+	it.nightbird.modularContext.fillStyle = it.operateNudge ? '#777' : '#555';
+	it.nightbird.modularContext.fillRect( it.posX+11, it.posY+32, 38, 12 );
+	it.nightbird.modularContext.fillStyle = it.operateReset ? '#777' : '#555';
+	it.nightbird.modularContext.fillRect( it.posX+51, it.posY+32, 38, 12 );
+	it.nightbird.modularContext.fillStyle = '#ddd';
+	it.nightbird.modularContext.textAlign = 'center';
+	it.nightbird.modularContext.textBaseline = 'middle';
+	it.nightbird.modularContext.fillText( String( it.time.toFixed(3) ), it.posX+50, it.posY+20 );
+	it.nightbird.modularContext.fillText( it.nudgeText ? it.nudgeText : 'Nudge', it.posX+30, it.posY+38 );
+	it.nightbird.modularContext.fillText( 'Reset', it.posX+70, it.posY+38 );
 
-	Nightbird.Node.prototype.draw.call( timeNode );
+	Nightbird.Node.prototype.draw.call( it );
 
 };

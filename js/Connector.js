@@ -1,76 +1,76 @@
 Nightbird.Connector = function( _nightbird, _isOutput, _type ){
 
-	var connector = this;
+	var it = this;
 
-	connector.nightbird = _nightbird;
-	connector.isOutput = _isOutput;
-	connector.type = _type;
+	it.nightbird = _nightbird;
+	it.isOutput = _isOutput;
+	it.type = _type;
 
-	connector.posX = 0;
-	connector.posY = 0;
-	connector.radius = 5;
+	it.posX = 0;
+	it.posY = 0;
+	it.radius = 5.2;
 
-	connector.links = [];
+	it.links = [];
 
-	connector.name = '';
+	it.name = '';
 
 };
 
 Nightbird.Connector.prototype.setName = function( _name ){
 
-	var connector = this;
+	var it = this;
 
-	connector.name = _name;
+	it.name = _name;
 
 };
 
 Nightbird.Connector.prototype.move = function( _x, _y ){
 
-	var connector = this;
+	var it = this;
 
-	connector.posX = _x;
-	connector.posY = _y;
+	it.posX = _x;
+	it.posY = _y;
 
 };
 
 Nightbird.Connector.prototype.setLink = function( _link ){
 
-	var connector = this;
+	var it = this;
 
-	connector.links.push( _link );
+	it.links.push( _link );
 
 };
 
 Nightbird.Connector.prototype.removeLink = function( _link ){
 
-	var connector = this;
+	var it = this;
 
-	connector.links.splice( connector.links.indexOf( _link ), 1 );
+	it.links.splice( it.links.indexOf( _link ), 1 );
 
 };
 
 Nightbird.Connector.prototype.draw = function(){
 
-	var connector = this;
+	var it = this;
 
-	connector.nightbird.modularContext.beginPath();
-	connector.nightbird.modularContext.arc( connector.posX, connector.posY, connector.radius, 0, 7, false );
+	it.nightbird.modularContext.beginPath();
+	it.nightbird.modularContext.arc( it.posX, it.posY, it.radius, 0, 7, false );
 	var col;
-	switch( connector.type ){
+	switch( it.type ){
 		case 'canvas' : col = '#06f'; break;
 		case 'number' : col = '#f06'; break;
 	}
-	connector.nightbird.modularContext.fillStyle = col;
-	connector.nightbird.modularContext.fill();
-	connector.nightbird.modularContext.lineWidth = 1;
-	connector.nightbird.modularContext.strokeStyle = '#000';
-	connector.nightbird.modularContext.stroke();
+	it.nightbird.modularContext.fillStyle = col;
+	it.nightbird.modularContext.fill();
+	it.nightbird.modularContext.lineWidth = 1;
+	it.nightbird.modularContext.strokeStyle = '#000';
+	it.nightbird.modularContext.stroke();
 
-	if( connector.links.length == 0 ){
-		connector.nightbird.modularContext.textAlign = connector.isOutput ? 'left' : 'right';
-		connector.nightbird.modularContext.textBaseline = 'middle';
-		connector.nightbird.modularContext.fillStyle = '#ddd';
-		connector.nightbird.modularContext.fillText( '   '+connector.name+'   ', connector.posX, connector.posY );
+	if( it.links.length == 0 ){
+		it.nightbird.modularContext.textAlign = it.isOutput ? 'left' : 'right';
+		it.nightbird.modularContext.textBaseline = 'middle';
+		it.nightbird.modularContext.fillStyle = '#ddd';
+		it.nightbird.modularContext.fillText( '   '+it.name+'   ', it.posX, it.posY );
 	};
 
 };

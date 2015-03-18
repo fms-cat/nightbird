@@ -1,47 +1,47 @@
 Nightbird.Node = function( _nightbird ){
 
-	var node = this;
+	var it = this;
 
-	node.nightbird = _nightbird;
+	it.nightbird = _nightbird;
 
-	node.active = true;
-	node.name = 'Node';
-	node.nameColor = '#ddd';
+	it.active = true;
+	it.name = 'Node';
+	it.nameColor = '#ddd';
 
-	node.posX = 32;
-	node.posY = 32;
-	node.width = 100;
-	node.height = 10;
+	it.posX = 32;
+	it.posY = 32;
+	it.width = 100;
+	it.height = 10;
 
-	node.inputs = [];
-	node.outputs = [];
+	it.inputs = [];
+	it.outputs = [];
 
-	node.contextMenus = [];
+	it.contextMenus = [];
 
-	node.contextMenus.push( function(){
-		var contextMenu = new Nightbird.ContextMenu( node.nightbird );
+	it.contextMenus.push( function(){
+		var contextMenu = new Nightbird.ContextMenu( it.nightbird );
 		contextMenu.setName( (function(){
-			if( node.active ){ return 'Deactivate'; }
+			if( it.active ){ return 'Deactivate'; }
 			else{ return 'Activate'; }
 		}() ) );
 		contextMenu.onClick = function(){
-			node.active = !node.active;
+			it.active = !it.active;
 		};
 		return contextMenu;
 	} );
-	node.contextMenus.push( function(){
-		var contextMenu = new Nightbird.ContextMenu( node.nightbird );
+	it.contextMenus.push( function(){
+		var contextMenu = new Nightbird.ContextMenu( it.nightbird );
 		contextMenu.setName( 'Disconnect' );
 		contextMenu.onClick = function(){
-			node.disconnect();
+			it.disconnect();
 		};
 		return contextMenu;
 	} );
-	node.contextMenus.push( function(){
-		var contextMenu = new Nightbird.ContextMenu( node.nightbird );
+	it.contextMenus.push( function(){
+		var contextMenu = new Nightbird.ContextMenu( it.nightbird );
 		contextMenu.setName( 'Remove' );
 		contextMenu.onClick = function(){
-			node.remove();
+			it.remove();
 		};
 		return contextMenu;
 	} );
@@ -50,38 +50,39 @@ Nightbird.Node = function( _nightbird ){
 
 Nightbird.Node.prototype.move = function( _x, _y ){
 
-	var node = this;
+	var it = this;
 
 	if( typeof _x == 'number' && typeof _y == 'number' ){
-		node.posX = _x;
-		node.posY = _y;
+		it.posX = _x;
+		it.posY = _y;
 	}
 
-	for( var i in node.inputs ){
-		node.inputs[i].move( node.posX-12, node.posY+10+16*i );
+	for( var i in it.inputs ){
+		it.inputs[i].move( it.posX-12, it.posY+10+16*i );
 	}
-	for( var i in node.outputs ){
-		node.outputs[i].move( node.posX+node.width+12, node.posY+10+16*i );
+	for( var i in it.outputs ){
+		it.outputs[i].move( it.posX+it.width+12, it.posY+10+16*i );
 	}
 
 };
 
 Nightbird.Node.prototype.disconnect = function(){
 
-	var node = this;
+	var it = this;
 
-	for( var i=0; i<node.inputs.length; i++ ){
-		var connector = node.inputs[i];
+	for( var i=0; i<it.inputs.length; i++ ){
+		var connector = it.inputs[i];
+		console.log(connector);
 		for( var il=connector.links.length-1; 0<=il; il-- ){
-			node.nightbird.links.splice( node.nightbird.links.indexOf( connector.links[i] ), 1 );
-			connector.links[i].remove();
+			it.nightbird.links.splice( it.nightbird.links.indexOf( connector.links[il] ), 1 );
+			connector.links[il].remove();
 		}
 	}
-	for( var i=0; i<node.outputs.length; i++ ){
-		var connector = node.outputs[i];
+	for( var i=0; i<it.outputs.length; i++ ){
+		var connector = it.outputs[i];
 		for( var il=connector.links.length-1; 0<=il; il-- ){
-			node.nightbird.links.splice( node.nightbird.links.indexOf( connector.links[i] ), 1 );
-			connector.links[i].remove();
+			it.nightbird.links.splice( it.nightbird.links.indexOf( connector.links[il] ), 1 );
+			connector.links[il].remove();
 		}
 	}
 
@@ -89,57 +90,55 @@ Nightbird.Node.prototype.disconnect = function(){
 
 Nightbird.Node.prototype.remove = function(){
 
-	var node = this;
+	var it = this;
 
-	node.disconnect();
-	node.nightbird.nodes.splice( node.nightbird.nodes.indexOf( node ), 1 );
+	it.disconnect();
+	it.nightbird.nodes.splice( it.nightbird.nodes.indexOf( it ), 1 );
 
 };
 
 Nightbird.Node.prototype.draw = function(){
 
-	var node = this;
+	var it = this;
 
-	node.nightbird.modularContext.globalAlpha = .8;
-	if( node.active ){ node.nightbird.modularContext.fillStyle = '#567'; }
-	else{ node.nightbird.modularContext.fillStyle = '#755'; }
-	node.nightbird.modularContext.fillRect( node.posX, node.posY, node.width, 10 );
+	if( it.active ){ it.nightbird.modularContext.fillStyle = '#567'; }
+	else{ it.nightbird.modularContext.fillStyle = '#755'; }
+	it.nightbird.modularContext.fillRect( it.posX, it.posY, it.width, 10 );
 
-	node.nightbird.modularContext.globalAlpha = 1;
-	node.nightbird.modularContext.fillStyle = node.nameColor;
-	node.nightbird.modularContext.textAlign = 'left';
-	node.nightbird.modularContext.textBaseline = 'center';
-	if( !node.displayName ){
-		node.displayName = '';
-		for( var i=0; i<node.name.length; i++ ){
-			node.displayName += node.name.charAt( i );
-			if( node.width-20 < node.nightbird.modularContext.measureText( node.displayName ).width ){
-				node.displayName += '...';
+	it.nightbird.modularContext.fillStyle = it.nameColor;
+	it.nightbird.modularContext.textAlign = 'left';
+	it.nightbird.modularContext.textBaseline = 'center';
+	if( !it.displayName ){
+		it.displayName = '';
+		for( var i=0; i<it.name.length; i++ ){
+			it.displayName += it.name.charAt( i );
+			if( it.width-20 < it.nightbird.modularContext.measureText( it.displayName ).width ){
+				it.displayName += '...';
 				break;
 			}
 		}
 	}
-	node.nightbird.modularContext.fillText( node.displayName, node.posX+3, node.posY+5 );
+	it.nightbird.modularContext.fillText( it.displayName, it.posX+3, it.posY+5 );
 
-	for( var i in node.inputs ){
-		node.inputs[i].draw();
+	for( var i in it.inputs ){
+		it.inputs[i].draw();
 	}
-	for( var i in node.outputs ){
-		node.outputs[i].draw();
+	for( var i in it.outputs ){
+		it.outputs[i].draw();
 	}
 
 };
 
 Nightbird.Node.prototype.drawTarget = function(){
 
-	var node = this;
+	var it = this;
 
-	node.nightbird.modularContext.globalAlpha = .2;
-	node.nightbird.modularContext.fillStyle = '#846';
-	node.nightbird.modularContext.fillRect( node.posX-5, node.posY-5, node.width+10, node.height+10 );
-	node.nightbird.modularContext.strokeStyle = '#eac';
-	node.nightbird.modularContext.lineWidth = 1;
-	node.nightbird.modularContext.strokeRect( node.posX-5, node.posY-5, node.width+10, node.height+10 );
-	node.nightbird.modularContext.globalAlpha = 1;
+	it.nightbird.modularContext.globalAlpha = .2;
+	it.nightbird.modularContext.fillStyle = '#846';
+	it.nightbird.modularContext.fillRect( it.posX-5, it.posY-5, it.width+10, it.height+10 );
+	it.nightbird.modularContext.strokeStyle = '#eac';
+	it.nightbird.modularContext.lineWidth = 1;
+	it.nightbird.modularContext.strokeRect( it.posX-5, it.posY-5, it.width+10, it.height+10 );
+	it.nightbird.modularContext.globalAlpha = 1;
 
 };

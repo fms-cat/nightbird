@@ -1,52 +1,52 @@
 Nightbird.ContextMenu = function( _nightbird ){
 
-	var contextMenu = this;
+	var it = this;
 
-	contextMenu.nightbird = _nightbird;
+	it.nightbird = _nightbird;
 
-	contextMenu.name = '';
+	it.name = '';
 
-	contextMenu.posX = 0;
-	contextMenu.posY = 0;
-	contextMenu.width = 100;
-	contextMenu.height = 14;
+	it.posX = 0;
+	it.posY = 0;
+	it.width = 100;
+	it.height = 14;
 
-	contextMenu.selected = false;
+	it.selected = false;
 
 };
 
 Nightbird.ContextMenu.prototype.move = function( _x, _y ){
 
-	var contextMenu = this;
+	var it = this;
 
-	contextMenu.posX = _x;
-	contextMenu.posY = _y;
+	it.posX = _x;
+	it.posY = _y;
 
 };
 
 Nightbird.ContextMenu.prototype.setName = function( _name ){
 
-	var contextMenu = this;
+	var it = this;
 
-	contextMenu.name = _name;
+	it.name = _name;
 
 };
 
 Nightbird.ContextMenu.prototype.draw = function(){
 
-	var contextMenu = this;
+	var it = this;
 
-	contextMenu.nightbird.modularContext.fillStyle = '#aaa';
-	contextMenu.nightbird.modularContext.fillRect( contextMenu.posX, contextMenu.posY, contextMenu.width, contextMenu.height );
-	if( contextMenu.selected ){
-		contextMenu.nightbird.modularContext.fillStyle = '#444';
-		contextMenu.nightbird.modularContext.fillRect( contextMenu.posX+2, contextMenu.posY+2, contextMenu.width-4, contextMenu.height-4 );
-		contextMenu.nightbird.modularContext.fillStyle = '#aaa';
+	it.nightbird.modularContext.fillStyle = '#aaa';
+	it.nightbird.modularContext.fillRect( it.posX, it.posY, it.width, it.height );
+	if( it.selected ){
+		it.nightbird.modularContext.fillStyle = '#444';
+		it.nightbird.modularContext.fillRect( it.posX+2, it.posY+2, it.width-4, it.height-4 );
+		it.nightbird.modularContext.fillStyle = '#aaa';
 	}else{
-		contextMenu.nightbird.modularContext.fillStyle = '#444';
+		it.nightbird.modularContext.fillStyle = '#444';
 	}
-	contextMenu.nightbird.modularContext.textAlign = 'left';
-	contextMenu.nightbird.modularContext.textBaseline = 'middle';
-	contextMenu.nightbird.modularContext.fillText( contextMenu.name, contextMenu.posX+4, contextMenu.posY+7 );
+	it.nightbird.modularContext.textAlign = 'left';
+	it.nightbird.modularContext.textBaseline = 'middle';
+	it.nightbird.modularContext.fillText( it.name, it.posX+4, it.posY+7 );
 
 };

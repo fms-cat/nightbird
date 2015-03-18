@@ -1,39 +1,39 @@
 Nightbird.MasterNode = function( _nightbird ){
 
-	var masterNode = this;
+	var it = this;
 
-	Nightbird.Node.call( masterNode, _nightbird );
+	Nightbird.Node.call( it, _nightbird );
 
-	masterNode.name = 'Master';
-	masterNode.width = 160;
-	masterNode.height = 160*masterNode.nightbird.height/masterNode.nightbird.width;
+	it.name = 'Master';
+	it.width = 160;
+	it.height = 10+160*it.nightbird.height/it.nightbird.width;
 
-	masterNode.canvas = document.createElement( 'canvas' );
-	masterNode.canvas.width = masterNode.nightbird.width;
-	masterNode.canvas.height = masterNode.nightbird.height;
+	it.canvas = document.createElement( 'canvas' );
+	it.canvas.width = it.nightbird.width;
+	it.canvas.height = it.nightbird.height;
 
-	masterNode.input = null;
+	it.input = null;
 
-	masterNode.context = masterNode.canvas.getContext( '2d' );
+	it.context = it.canvas.getContext( '2d' );
 
-	var inputCanvas = new Nightbird.Connector( masterNode.nightbird, false, 'canvas' );
+	var inputCanvas = new Nightbird.Connector( it.nightbird, false, 'canvas' );
 	inputCanvas.setName( 'input' );
 	inputCanvas.onTransfer = function( _data ){
-		masterNode.input = _data;
+		it.input = _data;
 	};
-	masterNode.inputs.push( inputCanvas );
-	masterNode.move();
+	it.inputs.push( inputCanvas );
+	it.move();
 
-	masterNode.contextMenus.pop();
-	masterNode.contextMenus.unshift( function(){
-		var contextMenu = new Nightbird.ContextMenu( masterNode.nightbird );
+	it.contextMenus.pop();
+	it.contextMenus.unshift( function(){
+		var contextMenu = new Nightbird.ContextMenu( it.nightbird );
 		contextMenu.setName( 'Open master window' );
 		contextMenu.onClick = function(){
 			var subWindow = window.open( 'about:blank', 'sub', 'width='+nightbird.width+',height='+nightbird.height+',menubar=no' );
 			subWindow.document.body.style.padding = 0;
 			subWindow.document.body.style.margin = 0;
 			subWindow.document.body.style.overflow = 'hidden';
-			
+
 			subWindow.document.body.appendChild( nightbird.master.canvas );
 			subWindow.onresize = function(){
 				nightbird.master.canvas.style.width = subWindow.innerWidth;
@@ -50,26 +50,26 @@ Nightbird.MasterNode.prototype.constructor = Nightbird.MasterNode;
 
 Nightbird.MasterNode.prototype.remove = function(){
 
-	var masterNode = this;
+	var it = this;
 
-	masterNode.disconnect();
+	it.disconnect();
 
 };
 
 Nightbird.MasterNode.prototype.draw = function(){
 
-	var masterNode = this;
+	var it = this;
 
-	if( masterNode.active ){
-		if( masterNode.input ){
-			masterNode.context.drawImage( masterNode.input, 0, 0, masterNode.canvas.width, masterNode.canvas.height );
+	if( it.active ){
+		if( it.input ){
+			it.context.drawImage( it.input, 0, 0, it.canvas.width, it.canvas.height );
 		}else{
-			masterNode.context.fillRect( 0, 0, masterNode.canvas.width, masterNode.canvas.height );
+			it.context.fillRect( 0, 0, it.canvas.width, it.canvas.height );
 		}
 	}
 
-	masterNode.nightbird.modularContext.drawImage( masterNode.canvas, masterNode.posX, masterNode.posY, masterNode.width, masterNode.height );
+	it.nightbird.modularContext.drawImage( it.canvas, it.posX, 10+it.posY, it.width, it.height-10 );
 
-	Nightbird.Node.prototype.draw.call( masterNode );
+	Nightbird.Node.prototype.draw.call( it );
 
 };

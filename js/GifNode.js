@@ -2,50 +2,50 @@
 
 Nightbird.GifNode = function( _nightbird, _file ){
 
-	var gifNode = this;
+	var it = this;
 
-	Nightbird.Node.call( gifNode, _nightbird );
-	gifNode.name = _file.name;
-	gifNode.width = 100;
-	gifNode.height = 100*gifNode.nightbird.height/gifNode.nightbird.width;
+	Nightbird.Node.call( it, _nightbird );
+	it.name = _file.name;
+	it.width = 100;
+	it.height = 10+100*it.nightbird.height/it.nightbird.width;
 
-	gifNode.canvas = document.createElement( 'canvas' );
-	gifNode.canvas.width = gifNode.nightbird.width;
-	gifNode.canvas.height = gifNode.nightbird.height;
+	it.canvas = document.createElement( 'canvas' );
+	it.canvas.width = it.nightbird.width;
+	it.canvas.height = it.nightbird.height;
 
-	gifNode.context = gifNode.canvas.getContext( '2d' );
+	it.context = it.canvas.getContext( '2d' );
 
-	gifNode.frames = [];
-	gifNode.frame = 0;
-	gifNode.auto = true;
+	it.frames = [];
+	it.frame = 0;
+	it.auto = true;
 
-	gifNode.gif = {};
+	it.gif = {};
 
-	gifNode.loadGif( _file );
+	it.loadGif( _file );
 
 	var outputCanvas = new Nightbird.Connector( nightbird, true, 'canvas' );
 	outputCanvas.setName( 'output' );
 	outputCanvas.onTransfer = function(){
-		return gifNode.canvas;
+		return it.canvas;
 	};
-	gifNode.outputs.push( outputCanvas );
-	gifNode.move();
+	it.outputs.push( outputCanvas );
+	it.move();
 	var inputFrame = new Nightbird.Connector( nightbird, false, 'number' );
 	inputFrame.setName( 'frame' );
 	inputFrame.onTransfer = function( _data ){
-		gifNode.frame = _data;
+		it.frame = _data;
 	};
-	gifNode.inputs.push( inputFrame );
-	gifNode.move();
+	it.inputs.push( inputFrame );
+	it.move();
 
-	gifNode.contextMenus.unshift( function(){
-		var contextMenu = new Nightbird.ContextMenu( gifNode.nightbird );
+	it.contextMenus.unshift( function(){
+		var contextMenu = new Nightbird.ContextMenu( it.nightbird );
 		contextMenu.setName( ( function(){
-			if( gifNode.auto ){ return 'Manual frame'; }
+			if( it.auto ){ return 'Manual frame'; }
 			else{ return 'Auto frame'; }
 		}() ) );
 		contextMenu.onClick = function(){
-			gifNode.auto = !gifNode.auto;
+			it.auto = !it.auto;
 		};
 		return contextMenu;
 	} );
@@ -57,7 +57,7 @@ Nightbird.GifNode.prototype.constructor = Nightbird.GifNode;
 
 Nightbird.GifNode.prototype.loadGif = function( _file ){
 
-	var gifNode = this;
+	var it = this;
 
 	var reader = new FileReader();
 	var name = _file.name;
@@ -70,8 +70,8 @@ Nightbird.GifNode.prototype.loadGif = function( _file ){
 		/* magic number 'GIF' */ offset += 3;
 		var gifVersion = getAscii( offset, 3 ); offset += 3;
 		if( gifVersion == '89a' ){
-			gifNode.gif.width = dv.getUint16( offset, true ); offset += 2;
-			gifNode.gif.height = dv.getUint16( offset, true ); offset += 2;
+			it.gif.width = dv.getUint16( offset, true ); offset += 2;
+			it.gif.height = dv.getUint16( offset, true ); offset += 2;
 			var gctFlag = ( dv.getUint8( offset )>>>7 );
 			var colorRes = ( dv.getUint8( offset )>>>4&7 )+1;
 			var gctSize = Math.pow( 2, ( dv.getUint8( offset )&7 )+1 ); offset ++;
@@ -93,7 +93,7 @@ Nightbird.GifNode.prototype.loadGif = function( _file ){
 			/* Graphic Control Extension test */
 			while( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0xf9 ){
 				/* Graphic Control Extension - to bifFlags */ offset += 4;
-				if( !gifNode.gif.delay ){ gifNode.gif.delay = Math.max( dv.getUint16( offset, true ), 1 ); } offset += 2;
+				if( !it.gif.delay ){ it.gif.delay = Math.max( dv.getUint16( offset, true ), 1 ); } offset += 2;
 				/* transparentIndex, terminator */ offset += 2;
 				/* Image Block Separator to Image Height */ offset += 9;
 				var lctFlag = ( dv.getUint8( offset )>>>7 );
@@ -110,19 +110,19 @@ Nightbird.GifNode.prototype.loadGif = function( _file ){
 				copyData( frame, 0, 0, dataIndex[0] );
 				copyData( frame, dataIndex[i-1], dataIndex[0], dataIndex[i]-dataIndex[i-1] );
 				var blob = new Blob( [ frame ], { "type" : "image/gif" } );
-				gifNode.frames[i-1] = new Image();
-				gifNode.frames[i-1].src = window.URL.createObjectURL( blob );
+				it.frames[i-1] = new Image();
+				it.frames[i-1].src = window.URL.createObjectURL( blob );
 				i ++;
 			}
-			gifNode.gif.length = i-1;
+			it.gif.length = i-1;
 		}else{
-			gifNode.gif.width = dv.getUint16( offset, true ); offset += 2;
-			gifNode.gif.height = dv.getUint16( offset, true ); offset += 2;
+			it.gif.width = dv.getUint16( offset, true ); offset += 2;
+			it.gif.height = dv.getUint16( offset, true ); offset += 2;
 			var blob = new Blob( [ dv ], { "type" : "image/gif" } );
-			gifNode.frames[0] = new Image();
-			gifNode.frames[0].src = window.URL.createObjectURL( blob );
-			gifNode.gif.length = 1;
-			gifNode.gif.delay = 1;
+			it.frames[0] = new Image();
+			it.frames[0].src = window.URL.createObjectURL( blob );
+			it.gif.length = 1;
+			it.gif.delay = 1;
 		}
 
 		function copyData( _to, _fromOffset, _toOffset, _length ){
@@ -148,34 +148,34 @@ Nightbird.GifNode.prototype.loadGif = function( _file ){
 
 Nightbird.GifNode.prototype.draw = function(){
 
-	var gifNode = this;
+	var it = this;
 
-	if( gifNode.active ){
+	if( it.active ){
 
 		var frame = 0;
-		if( gifNode.auto ){ frame = Math.floor( ( gifNode.nightbird.time*100/gifNode.gif.delay )%gifNode.gif.length ); }
-		else{ frame = Math.floor( ( gifNode.frame%1 )*gifNode.gif.length ); }
+		if( it.auto ){ frame = Math.floor( ( it.nightbird.time*100/it.gif.delay )%it.gif.length ); }
+		else{ frame = Math.floor( ( it.frame%1 )*it.gif.length ); }
 
-		if( gifNode.frames[ frame ] ){
+		if( it.frames[ frame ] ){
 			var x = 0;
 			var y = 0;
-			var w = gifNode.gif.width;
-			var h = gifNode.gif.height;
-			if( w/gifNode.canvas.width < h/gifNode.canvas.height ){
-				y = (h-(w*gifNode.canvas.height/gifNode.canvas.width))/2;
-				h = w*gifNode.canvas.height/gifNode.canvas.width;
+			var w = it.gif.width;
+			var h = it.gif.height;
+			if( w/it.canvas.width < h/it.canvas.height ){
+				y = (h-(w*it.canvas.height/it.canvas.width))/2;
+				h = w*it.canvas.height/it.canvas.width;
 			}else{
-				x = (w-(h*gifNode.canvas.width/gifNode.canvas.height))/2;
-				w = h*gifNode.canvas.width/gifNode.canvas.height;
+				x = (w-(h*it.canvas.width/it.canvas.height))/2;
+				w = h*it.canvas.width/it.canvas.height;
 			}
-			var s = Math.min( gifNode.gif.width, gifNode.gif.height );
-			gifNode.context.drawImage( gifNode.frames[ frame ], x, y, w, h, 0, 0, gifNode.canvas.width, gifNode.canvas.height );
+			var s = Math.min( it.gif.width, it.gif.height );
+			it.context.drawImage( it.frames[ frame ], x, y, w, h, 0, 0, it.canvas.width, it.canvas.height );
 		}
 
 	}
 
-	gifNode.nightbird.modularContext.drawImage( gifNode.canvas, gifNode.posX, gifNode.posY, gifNode.width, gifNode.height );
+	it.nightbird.modularContext.drawImage( it.canvas, it.posX, 10+it.posY, it.width, it.height-10 );
 
-	Nightbird.Node.prototype.draw.call( gifNode );
+	Nightbird.Node.prototype.draw.call( it );
 
 };

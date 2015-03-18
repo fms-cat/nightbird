@@ -1,117 +1,116 @@
 Nightbird.Link = function( _nightbird, _connector ){
 
-	var link = this;
+	var it = this;
 
-	link.nightbird = _nightbird;
+	it.nightbird = _nightbird;
 
-	link.grabStart = false;
-	link.grabEnd = false;
-	link.grabX = 0;
-	link.grabY = 0;
-	link.start = null;
-	link.end = null;
+	it.grabStart = false;
+	it.grabEnd = false;
+	it.grabX = 0;
+	it.grabY = 0;
+	it.start = null;
+	it.end = null;
 
 	if( _connector.isOutput ){
-		link.start = _connector;
-		link.grabX = _connector.posX;
-		link.grabY = _connector.posY;
-		link.grabEnd = true;
+		it.start = _connector;
+		it.grabX = _connector.posX;
+		it.grabY = _connector.posY;
+		it.grabEnd = true;
 	}else{
-		link.end = _connector;
-		link.grabX = _connector.posX;
-		link.grabY = _connector.posY;
-		link.grabStart = true;
+		it.end = _connector;
+		it.grabX = _connector.posX;
+		it.grabY = _connector.posY;
+		it.grabStart = true;
 	}
 
-	link.type = _connector.type;
+	it.type = _connector.type;
 
 };
 
 Nightbird.Link.prototype.move = function( _x, _y ){
 
-	var link = this;
+	var it = this;
 
-	link.grabX = _x;
-	link.grabY = _y;
+	it.grabX = _x;
+	it.grabY = _y;
 
 };
 
 Nightbird.Link.prototype.remove = function(){
 
-	var link = this;
+	var it = this;
 
-	link.end.onTransfer( null );
-	if( link.start ){
-		link.start.removeLink( link );
+	it.end.onTransfer( null );
+	if( it.start ){
+		it.start.removeLink( it );
 	}
-	if( link.end ){
-		link.end.removeLink( link );
+	if( it.end ){
+		it.end.removeLink( it );
 	}
 
 };
 
 Nightbird.Link.prototype.transfer = function(){
 
-	var link = this;
+	var it = this;
 
-	link.end.onTransfer( link.start.onTransfer() );
+	it.end.onTransfer( it.start.onTransfer() );
 
 };
 
 Nightbird.Link.prototype.draw = function(){
 
-	var link = this;
+	var it = this;
 
-	if( link.start && link.end ){
-		link.transfer();
+	if( it.start && it.end ){
+		it.transfer();
 	}
 
-	var sx = link.grabStart ? link.grabX : link.start.posX;
-	var sy = link.grabStart ? link.grabY : link.start.posY;
-	var ex = link.grabEnd ? link.grabX : link.end.posX;
-	var ey = link.grabEnd ? link.grabY : link.end.posY;
-	link.nightbird.modularContext.beginPath();
-	link.nightbird.modularContext.moveTo( sx, sy );
+	var sx = it.grabStart ? it.grabX : it.start.posX;
+	var sy = it.grabStart ? it.grabY : it.start.posY;
+	var ex = it.grabEnd ? it.grabX : it.end.posX;
+	var ey = it.grabEnd ? it.grabY : it.end.posY;
+	it.nightbird.modularContext.beginPath();
+	it.nightbird.modularContext.moveTo( sx, sy );
 	if( sx<ex ){
-		link.nightbird.modularContext.bezierCurveTo( sx+(ex-sx)*.3, sy, ex-(ex-sx)*.3, ey, ex, ey );
+		it.nightbird.modularContext.bezierCurveTo( sx+(ex-sx)*.3, sy, ex-(ex-sx)*.3, ey, ex, ey );
 	}else{
-		link.nightbird.modularContext.bezierCurveTo( sx, sy+(ey-sy)*.3, ex, ey-(ey-sy)*.3, ex, ey );
+		it.nightbird.modularContext.bezierCurveTo( sx, sy+(ey-sy)*.3, ex, ey-(ey-sy)*.3, ex, ey );
 	}
-	link.nightbird.modularContext.lineWidth = 2;
+	it.nightbird.modularContext.lineWidth = 2;
 	var col;
-	switch( link.type ){
+	switch( it.type ){
 		case 'canvas' : col = '#06f'; break;
 		case 'number' : col = '#f06'; break;
 	}
-	if( link.grabStart || link.grabEnd ){
-		link.nightbird.modularContext.globalAlpha = .6;
+	if( it.grabStart || it.grabEnd ){
+		it.nightbird.modularContext.globalAlpha = .6;
 	}
-	link.nightbird.modularContext.strokeStyle = col;
-	link.nightbird.modularContext.stroke();
-	link.nightbird.modularContext.globalAlpha = 1;
+	it.nightbird.modularContext.strokeStyle = col;
+	it.nightbird.modularContext.stroke();
+	it.nightbird.modularContext.globalAlpha = 1;
 
 };
 
 Nightbird.Link.prototype.drawMoving = function(){
 
-	var link = this;
+	var it = this;
 
-	var sx = link.start.posX;
-	var sy = link.start.posY;
-	var ex = link.end.posX;
-	var ey = link.end.posY;
-	link.nightbird.modularContext.beginPath();
-	link.nightbird.modularContext.moveTo( sx, sy );
+	var sx = it.start.posX;
+	var sy = it.start.posY;
+	var ex = it.end.posX;
+	var ey = it.end.posY;
+	it.nightbird.modularContext.beginPath();
+	it.nightbird.modularContext.moveTo( sx, sy );
 	if( sx<ex ){
-		link.nightbird.modularContext.bezierCurveTo( sx+(ex-sx)*.3, sy, ex-(ex-sx)*.3, ey, ex, ey );
+		it.nightbird.modularContext.bezierCurveTo( sx+(ex-sx)*.3, sy, ex-(ex-sx)*.3, ey, ex, ey );
 	}else{
-		link.nightbird.modularContext.bezierCurveTo( sx, sy+(ey-sy)*.3, ex, ey-(ey-sy)*.3, ex, ey );
+		it.nightbird.modularContext.bezierCurveTo( sx, sy+(ey-sy)*.3, ex, ey-(ey-sy)*.3, ex, ey );
 	}
-	link.nightbird.modularContext.lineWidth = 5;
-	link.nightbird.modularContext.strokeStyle = '#eac';
-	link.nightbird.modularContext.globalAlpha = .4;
-	link.nightbird.modularContext.stroke();
-	link.nightbird.modularContext.globalAlpha = 1;
-
+	it.nightbird.modularContext.lineWidth = 5;
+	it.nightbird.modularContext.strokeStyle = '#eac';
+	it.nightbird.modularContext.globalAlpha = .4;
+	it.nightbird.modularContext.stroke();
+	it.nightbird.modularContext.globalAlpha = 1;
 
 };

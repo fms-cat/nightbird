@@ -1,72 +1,72 @@
 Nightbird.Textbox = function( _nightbird, _default, _onEnter ){
 
-	var textbox = this;
+	var it = this;
 
-	textbox.nightbird = _nightbird;
-	textbox.onEnter = _onEnter;
+	it.nightbird = _nightbird;
+	it.onEnter = _onEnter;
 
-	textbox.posX = 0;
-	textbox.posY = 0;
-	textbox.width = 80;
-	textbox.height = 12;
+	it.posX = 0;
+	it.posY = 0;
+	it.width = 80;
+	it.height = 12;
 
-	textbox.input = document.createElement( 'input' );
-	textbox.input.value = _default;
-	textbox.input.type = 'text';
-	textbox.input.style.position = 'absolute';
-	textbox.input.style.border = 'none';
-	textbox.input.style.background = '#aaa';
-	textbox.input.style.color = '#444';
-	textbox.input.style.fontSize = '8px';
-	textbox.input.style.left = textbox.posX+'px';
-	textbox.input.style.top = textbox.posY+'px';
-	textbox.input.style.width = textbox.width+'px';
-	textbox.input.style.height = textbox.height+'px';
-	textbox.input.addEventListener( 'keydown', function( _e ){
+	it.input = document.createElement( 'input' );
+	it.input.value = _default;
+	it.input.type = 'text';
+	it.input.style.position = 'absolute';
+	it.input.style.border = 'none';
+	it.input.style.background = '#aaa';
+	it.input.style.color = '#444';
+	it.input.style.fontSize = '8px';
+	it.input.style.left = it.posX+'px';
+	it.input.style.top = it.posY+'px';
+	it.input.style.width = it.width+'px';
+	it.input.style.height = it.height+'px';
+	it.input.addEventListener( 'keydown', function( _e ){
 
 		var k = _e.keyCode;
 
 		if( k == 13 ){
-			textbox.onEnter( textbox.input.value );
-			textbox.remove();
+			it.onEnter( it.input.value );
+			it.remove();
 		}
 
 	} );
 
-	document.body.appendChild( textbox.input );
-	textbox.input.focus();
+	document.body.appendChild( it.input );
+	it.input.focus();
 
 };
 
 Nightbird.Textbox.prototype.move = function( _x, _y ){
 
-	var textbox = this;
+	var it = this;
 
-	textbox.posX = _x;
-	textbox.posY = _y;
+	it.posX = _x;
+	it.posY = _y;
 
-	textbox.input.style.left = textbox.posX+'px';
-	textbox.input.style.top = textbox.posY+'px';
+	it.input.style.left = it.posX+'px';
+	it.input.style.top = it.posY+'px';
 
 };
 
 Nightbird.Textbox.prototype.setSize = function( _w, _h ){
 
-	var textbox = this;
+	var it = this;
 
-	textbox.width = _w;
-	textbox.height = _h;
+	it.width = _w;
+	it.height = _h;
 
-	textbox.input.style.width = textbox.width+'px';
-	textbox.input.style.height = textbox.height+'px';
+	it.input.style.width = it.width+'px';
+	it.input.style.height = it.height+'px';
 
 };
 
 Nightbird.Textbox.prototype.remove = function(){
 
-	var textbox = this;
+	var it = this;
 
-	document.body.removeChild( textbox.input );
-	textbox.nightbird.textbox = null;
+	document.body.removeChild( it.input );
+	it.nightbird.it = null;
 
 };
