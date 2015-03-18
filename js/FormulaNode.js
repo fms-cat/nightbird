@@ -15,7 +15,7 @@ Nightbird.FormulaNode = function( _nightbird ){
 	formulaNode.param.z = 0;
 	formulaNode.param.w = 0;
 	formulaNode.output = 0;
-	formulaNode.error = false;
+	formulaNode.error = '';
 
 	for( var v of ['x','y','z','w'] ){
 		var input = new Nightbird.Connector( formulaNode.nightbird, false, 'number' );
@@ -79,7 +79,7 @@ Nightbird.FormulaNode.prototype.interpret = function( _str ){
 			return 0;
 		}
 	}
-	formulaNode.error = null;
+	formulaNode.error = '';
 	return func;
 
 };

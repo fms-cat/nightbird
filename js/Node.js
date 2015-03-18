@@ -129,3 +129,17 @@ Nightbird.Node.prototype.draw = function(){
 	}
 
 };
+
+Nightbird.Node.prototype.drawTarget = function(){
+
+	var node = this;
+
+	node.nightbird.modularContext.globalAlpha = .2;
+	node.nightbird.modularContext.fillStyle = '#846';
+	node.nightbird.modularContext.fillRect( node.posX-5, node.posY-5, node.width+10, node.height+10 );
+	node.nightbird.modularContext.strokeStyle = '#eac';
+	node.nightbird.modularContext.lineWidth = 1;
+	node.nightbird.modularContext.strokeRect( node.posX-5, node.posY-5, node.width+10, node.height+10 );
+	node.nightbird.modularContext.globalAlpha = 1;
+
+};

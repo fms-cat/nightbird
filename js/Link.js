@@ -91,3 +91,27 @@ Nightbird.Link.prototype.draw = function(){
 	link.nightbird.modularContext.globalAlpha = 1;
 
 };
+
+Nightbird.Link.prototype.drawMoving = function(){
+
+	var link = this;
+
+	var sx = link.start.posX;
+	var sy = link.start.posY;
+	var ex = link.end.posX;
+	var ey = link.end.posY;
+	link.nightbird.modularContext.beginPath();
+	link.nightbird.modularContext.moveTo( sx, sy );
+	if( sx<ex ){
+		link.nightbird.modularContext.bezierCurveTo( sx+(ex-sx)*.3, sy, ex-(ex-sx)*.3, ey, ex, ey );
+	}else{
+		link.nightbird.modularContext.bezierCurveTo( sx, sy+(ey-sy)*.3, ex, ey-(ey-sy)*.3, ex, ey );
+	}
+	link.nightbird.modularContext.lineWidth = 5;
+	link.nightbird.modularContext.strokeStyle = '#eac';
+	link.nightbird.modularContext.globalAlpha = .4;
+	link.nightbird.modularContext.stroke();
+	link.nightbird.modularContext.globalAlpha = 1;
+
+
+};
