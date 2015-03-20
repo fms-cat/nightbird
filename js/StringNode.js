@@ -3,7 +3,7 @@ Nightbird.StringNode = function( _nightbird ){
 	var it = this;
 
 	Nightbird.Node.call( it, _nightbird );
-	it.name = 'Value';
+	it.name = 'String';
 	it.width = 160;
 	it.height = 30;
 

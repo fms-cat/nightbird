@@ -151,10 +151,10 @@ Nightbird.prototype.mousedown1 = function( _e ){
 		var contextMenu = it.contextMenus[i];
 		if( 0 <= it.mouseX-contextMenu.posX && it.mouseX-contextMenu.posX < contextMenu.width && 0 <= it.mouseY-contextMenu.posY && it.mouseY-contextMenu.posY < contextMenu.height ){
 			it.selectContextMenu = contextMenu;
-			contextMenu.selected = true;
 			return;
 		}
 	}
+	it.selectContextMenu = null;
 	it.contextMenus = [];
 
 	for( var i=it.nodes.length-1; 0<=i; i-- ){
@@ -217,6 +217,7 @@ Nightbird.prototype.mousedown3 = function( _e ){
 
 	var it = this;
 
+	it.selectContextMenu = null;
 	it.contextMenus = [];
 
 	for( var i=it.nodes.length-1; 0<=i; i-- ){
@@ -264,7 +265,6 @@ Nightbird.prototype.mouseup1 = function( _e ){
 	if( it.selectContextMenu ){
 		var contextMenu = it.selectContextMenu;
 		it.selectContextMenu.onClick();
-		it.selectContextMenu.selected = false;
 		it.selectContextMenu = null;
 		it.contextMenus = [];
 	}
@@ -559,7 +559,6 @@ Nightbird.prototype.mousemove = function( _e ){
 		var contextMenu = it.selectContextMenu;
 		if( 0 <= it.mouseX-contextMenu.posX && it.mouseX-contextMenu.posX < contextMenu.width && 0 <= it.mouseY-contextMenu.posY && it.mouseY-contextMenu.posY < contextMenu.height ){
 		}else{
-			it.selectContextMenu.selected = false;
 			it.selectContextMenu = null;
 		}
 	}
@@ -620,14 +619,44 @@ Nightbird.prototype.keydown = function( _e ){
 		if( it.textbox ){
 			it.textbox.remove();
 		}
-		if( it.contextMenus ){
+		it.selectContextMenu = null;
+		it.contextMenus = [];
+	}
+
+	if( document.activeElement != document.body ){ return; }
+
+	if( 0 < it.contextMenus.length ){
+		if( k == 27 ){
+			_e.preventDefault();
+			it.selectContextMenu = null;
 			it.contextMenus = [];
+		}else if( k == 13 ){
+			_e.preventDefault();
+			if( it.selectContextMenu ){
+				it.selectContextMenu.onClick();
+				it.selectContextMenu = null;
+				it.contextMenus = [];
+			}else{
+				it.selectContextMenu = it.contextMenus[0];
+			}
+		}else if( k == 38 || k == 40 ){
+			_e.preventDefault();
+			var selected = it.contextMenus.indexOf( it.selectContextMenu );
+			if( k == 40 ){
+				selected = ( ++selected )%it.contextMenus.length;
+			}else if( k == 38 ){
+				if( selected == -1 || selected == 0 ){ selected = it.contextMenus.length-1 }
+				else{ selected --; }
+			}
+			it.selectContextMenu = it.contextMenus[selected];
 		}
 	}
 
 	if( k == 32 ){
 		_e.preventDefault();
 		it.searchNodes();
+		it.selectContextMenu = null;
+		it.contextMenus = [];
 	}
 
 };
@@ -672,11 +701,12 @@ Nightbird.prototype.searchNodes = function( _query ){
 
 		contextMenus = [];
 
-		newNodeMenu( 'Value', Nightbird.ValueNode );
-		newNodeMenu( 'Time', Nightbird.TimeNode );
 		newNodeMenu( 'EzFormula', Nightbird.EzFormulaNode );
 		newNodeMenu( 'Formula', Nightbird.FormulaNode );
 		newNodeMenu( 'String', Nightbird.StringNode );
+		newNodeMenu( 'Text', Nightbird.TextNode );
+		newNodeMenu( 'Time', Nightbird.TimeNode );
+		newNodeMenu( 'Value', Nightbird.ValueNode );
 
 		function newNodeMenu( _name, _node ){
 			if( query.test( _name ) ){
@@ -729,7 +759,7 @@ Nightbird.prototype.draw = function(){
 
 	it.time = ( +new Date() - it.begint )*1e-3;
 
-	it.modularContext.fillStyle = '#111';
+	it.modularContext.fillStyle = '#222';
 	it.modularContext.fillRect( 0, 0, it.modular.width, it.modular.height );
 
 	for( var link of it.links ){

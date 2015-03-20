@@ -111,7 +111,7 @@ Nightbird.EzFormulaNode.prototype.draw = function(){
 	var it = this;
 
 	if( it.active ){
-		it.output = it.func( it.param.x, it.param.y, it.param.z, it.param.w );
+		it.output = it.func( it.param );
 		if( isNaN( it.output ) ){ it.output = 0; }
 	}
 

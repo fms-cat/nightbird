@@ -61,10 +61,10 @@ Nightbird.MasterNode.prototype.draw = function(){
 	var it = this;
 
 	if( it.active ){
+		it.context.clearRect( 0, 0, it.canvas.width, it.canvas.height );
+		it.context.fillRect( 0, 0, it.canvas.width, it.canvas.height );
 		if( it.input ){
 			it.context.drawImage( it.input, 0, 0, it.canvas.width, it.canvas.height );
-		}else{
-			it.context.fillRect( 0, 0, it.canvas.width, it.canvas.height );
 		}
 	}
 

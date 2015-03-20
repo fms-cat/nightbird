@@ -11,8 +11,6 @@ Nightbird.ContextMenu = function( _nightbird ){
 	it.width = 100;
 	it.height = 14;
 
-	it.selected = false;
-
 };
 
 Nightbird.ContextMenu.prototype.move = function( _x, _y ){
@@ -38,7 +36,7 @@ Nightbird.ContextMenu.prototype.draw = function(){
 
 	it.nightbird.modularContext.fillStyle = '#aaa';
 	it.nightbird.modularContext.fillRect( it.posX, it.posY, it.width, it.height );
-	if( it.selected ){
+	if( it.nightbird.selectContextMenu == it ){
 		it.nightbird.modularContext.fillStyle = '#444';
 		it.nightbird.modularContext.fillRect( it.posX+2, it.posY+2, it.width-4, it.height-4 );
 		it.nightbird.modularContext.fillStyle = '#aaa';
