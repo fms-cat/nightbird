@@ -17,7 +17,7 @@ Nightbird.GifNode = function( _nightbird, _file ){
 
 	it.frames = [];
 	it.frame = 0;
-	it.auto = true;
+	it.cycle = 'Auto';
 
 	it.gif = {};
 
@@ -41,11 +41,18 @@ Nightbird.GifNode = function( _nightbird, _file ){
 	it.contextMenus.unshift( function(){
 		var contextMenu = new Nightbird.ContextMenu( it.nightbird );
 		contextMenu.setName( ( function(){
-			if( it.auto ){ return 'Manual frame'; }
-			else{ return 'Auto frame'; }
+			return 'Frame cycle ('+it.cycle+')';
 		}() ) );
 		contextMenu.onClick = function(){
-			it.auto = !it.auto;
+			it.nightbird.textbox = new Nightbird.Textbox( it.nightbird, it.cycle, function( _value ){
+				var value = Number( _value );
+				if( isNaN( value ) || value == 0 ){
+					it.cycle = 'Auto';
+				}else{
+					it.cycle = Number( _value );
+				}
+			} );
+			it.nightbird.textbox.setSize( 40, 12 );
 		};
 		return contextMenu;
 	} );
@@ -153,8 +160,8 @@ Nightbird.GifNode.prototype.draw = function(){
 	if( it.active ){
 
 		var frame = 0;
-		if( it.auto ){ frame = Math.floor( ( it.nightbird.time*100/it.gif.delay )%it.gif.length ); }
-		else{ frame = Math.floor( ( it.frame%1 )*it.gif.length ); }
+		if( it.cycle == 'Auto' ){ frame = Math.floor( ( it.nightbird.time*100/it.gif.delay )%it.gif.length ); }
+		else{ frame = Math.floor( ( (it.frame/it.cycle)%1 )*it.gif.length ); }
 
 		if( it.frames[ frame ] ){
 			var x = 0;

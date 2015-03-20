@@ -121,6 +121,12 @@ var Nightbird = function( _w, _h ){
 
 	}, false );
 
+	document.addEventListener( 'keydown', function( _e ){
+
+		it.keydown( _e );
+
+	} );
+
 	it.modular.addEventListener( 'contextmenu', function( _e ){
 
 		_e.preventDefault();
@@ -131,9 +137,7 @@ var Nightbird = function( _w, _h ){
 	it.input.type = 'file';
 	it.input.multiple = true;
 	it.input.onchange = function( _e ){
-
 		it.loadFiles( _e.target.files );
-
 	};
 
 };
@@ -177,7 +181,7 @@ Nightbird.prototype.mousedown1 = function( _e ){
 		// nodeのinputのクリック（link開始）
 		for( var ic=0; ic<node.inputs.length; ic++ ){
 			var connector = node.inputs[ic];
-			if( dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
+			if( Nightbird.dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
 				var link = new Nightbird.Link( it, connector );
 				it.links.push( link );
 				it.grabLinks.push( link );
@@ -189,7 +193,7 @@ Nightbird.prototype.mousedown1 = function( _e ){
 		// nodeのoutputのクリック（link開始）
 		for( var ic=0; ic<node.outputs.length; ic++ ){
 			var connector = node.outputs[ic];
-			if( dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
+			if( Nightbird.dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
 				var link = new Nightbird.Link( it, connector );
 				it.links.push( link );
 				it.grabLinks.push( link );
@@ -207,10 +211,6 @@ Nightbird.prototype.mousedown1 = function( _e ){
 	it.multipleRectX2 = it.mouseX;
 	it.multipleRectY2 = it.mouseY;
 
-	function dist( _x1, _y1, _x2, _y2 ){
-		return Math.sqrt( (_x2-_x1)*(_x2-_x1)+(_y2-_y1)*(_y2-_y1) );
-	}
-
 };
 
 Nightbird.prototype.mousedown3 = function( _e ){
@@ -225,7 +225,7 @@ Nightbird.prototype.mousedown3 = function( _e ){
 		// nodeのinputの右クリック
 		for( var ic=0; ic<node.inputs.length; ic++ ){
 			var connector = node.inputs[ic];
-			if( dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius && connector.links.length ){
+			if( Nightbird.dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius && connector.links.length ){
 				for( var i=connector.links.length-1; 0<=i; i-- ){
 					it.movingLinks.push( connector.links[i] );
 					var link = new Nightbird.Link( it, connector.links[i].start );
@@ -240,7 +240,7 @@ Nightbird.prototype.mousedown3 = function( _e ){
 		// nodeのoutputの右クリック
 		for( var ic=0; ic<node.outputs.length; ic++ ){
 			var connector = node.outputs[ic];
-			if( dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius && 0 < connector.links.length ){
+			if( Nightbird.dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius && 0 < connector.links.length ){
 				for( var i=connector.links.length-1; 0<=i; i-- ){
 					it.movingLinks.push( connector.links[i] );
 					var link = new Nightbird.Link( it, connector.links[i].end );
@@ -252,10 +252,6 @@ Nightbird.prototype.mousedown3 = function( _e ){
 			}
 		}
 
-	}
-
-	function dist( _x1, _y1, _x2, _y2 ){
-		return Math.sqrt( (_x2-_x1)*(_x2-_x1)+(_y2-_y1)*(_y2-_y1) );
 	}
 
 };
@@ -295,7 +291,7 @@ Nightbird.prototype.mouseup1 = function( _e ){
 			if( link.grabStart ){
 				for( var ic=0; ic<node.outputs.length; ic++ ){
 					var connector = node.outputs[ic];
-					if( connector.type == link.type && dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
+					if( connector.type == link.type && Nightbird.dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
 						if( link.end.links.length == 1 ){ // inputには1つしかlinkできない
 							it.links.splice( it.links.indexOf( link.end.links[0] ), 1 );
 							link.end.links[0].remove();
@@ -312,7 +308,7 @@ Nightbird.prototype.mouseup1 = function( _e ){
 			if( link.grabEnd ){
 				for( var ic=0; ic<node.inputs.length; ic++ ){
 					var connector = node.inputs[ic];
-					if( connector.type == link.type && dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
+					if( connector.type == link.type && Nightbird.dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
 						if( connector.links.length == 1 ){ // inputには1つしかlinkできない
 							it.links.splice( it.links.indexOf( connector.links[0] ), 1 );
 							connector.links[0].remove();
@@ -363,10 +359,6 @@ Nightbird.prototype.mouseup1 = function( _e ){
 
 	}
 
-	function dist( _x1, _y1, _x2, _y2 ){
-		return Math.sqrt( (_x2-_x1)*(_x2-_x1)+(_y2-_y1)*(_y2-_y1) );
-	}
-
 };
 
 Nightbird.prototype.mouseup3 = function( _e ){
@@ -400,7 +392,7 @@ Nightbird.prototype.mouseup3 = function( _e ){
 				if( links[0].grabStart ){
 					for( var ic=0; ic<node.outputs.length; ic++ ){
 						var connector = node.outputs[ic];
-						if( connector.type == links[0].type && dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
+						if( connector.type == links[0].type && Nightbird.dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
 							for( var link of links ){
 								link.start = connector;
 								connector.setLink( link );
@@ -420,7 +412,7 @@ Nightbird.prototype.mouseup3 = function( _e ){
 				if( links[0].grabEnd ){
 					for( var ic=0; ic<node.inputs.length; ic++ ){
 						var connector = node.inputs[ic];
-						if( connector.type == links[0].type && dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
+						if( connector.type == links[0].type && Nightbird.dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
 							if( connector.link ){
 								it.links.splice( it.links.indexOf( connector.link ), 1 );
 								connector.link.remove();
@@ -534,31 +526,9 @@ Nightbird.prototype.mouseup3 = function( _e ){
 
 		contextMenus.push( function(){
 			var contextMenu = new Nightbird.ContextMenu( it );
-			contextMenu.setName( 'ValueNode' );
+			contextMenu.setName( 'Search Nodes' );
 			contextMenu.onClick = function(){
-				var node = new Nightbird.ValueNode( it );
-				it.nodes.push( node );
-				node.move( it.mouseX, it.mouseY );
-			};
-			return contextMenu;
-		} );
-		contextMenus.push( function(){
-			var contextMenu = new Nightbird.ContextMenu( it );
-			contextMenu.setName( 'TimeNode' );
-			contextMenu.onClick = function(){
-				var node = new Nightbird.TimeNode( it );
-				it.nodes.push( node );
-				node.move( it.mouseX, it.mouseY );
-			};
-			return contextMenu;
-		} );
-		contextMenus.push( function(){
-			var contextMenu = new Nightbird.ContextMenu( it );
-			contextMenu.setName( 'FormulaNode' );
-			contextMenu.onClick = function(){
-				var node = new Nightbird.FormulaNode( it );
-				it.nodes.push( node );
-				node.move( it.mouseX, it.mouseY );
+				it.searchNodes();
 			};
 			return contextMenu;
 		} );
@@ -577,10 +547,6 @@ Nightbird.prototype.mouseup3 = function( _e ){
 			contextMenu.move( it.mouseX, it.mouseY+i*16 );
 		}
 
-	}
-
-	function dist( _x1, _y1, _x2, _y2 ){
-		return Math.sqrt( (_x2-_x1)*(_x2-_x1)+(_y2-_y1)*(_y2-_y1) );
 	}
 
 };
@@ -643,6 +609,29 @@ Nightbird.prototype.drop = function( _e ){
 
 };
 
+Nightbird.prototype.keydown = function( _e ){
+
+	var it = this;
+
+	var k = _e.keyCode;
+
+	if( k == 27 ){
+		_e.preventDefault();
+		if( it.textbox ){
+			it.textbox.remove();
+		}
+		if( it.contextMenus ){
+			it.contextMenus = [];
+		}
+	}
+
+	if( k == 32 ){
+		_e.preventDefault();
+		it.searchNodes();
+	}
+
+};
+
 Nightbird.prototype.loadFiles = function( _files ){
 
 	var it = this;
@@ -659,16 +648,60 @@ Nightbird.prototype.loadFiles = function( _files ){
 		if( ext == 'glsl' ){
 			var node = new Nightbird.ShaderNode( it, file );
 			it.nodes.push( node );
-			node.move( it.mouseX+(i%8)*10, it.mouseY+(i%8)*10 );
+			node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
 		}else if( ext == 'gif' ){
 			var node = new Nightbird.GifNode( it, file );
 			it.nodes.push( node );
-			node.move( it.mouseX+(i%8)*10, it.mouseY+(i%8)*10 );
+			node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
 		}else{
 			console.error( file.name+' is unsupported extension' );
 		}
 
 	}
+
+};
+
+Nightbird.prototype.searchNodes = function( _query ){
+
+	var it = this;
+
+
+	it.textbox = new Nightbird.Textbox( it, '', function( _value ){
+
+		var query = new RegExp( _value, 'i' );
+
+		contextMenus = [];
+
+		newNodeMenu( 'Value', Nightbird.ValueNode );
+		newNodeMenu( 'Time', Nightbird.TimeNode );
+		newNodeMenu( 'EzFormula', Nightbird.EzFormulaNode );
+		newNodeMenu( 'Formula', Nightbird.FormulaNode );
+		newNodeMenu( 'String', Nightbird.StringNode );
+
+		function newNodeMenu( _name, _node ){
+			if( query.test( _name ) ){
+				contextMenus.push( function(){
+					var contextMenu = new Nightbird.ContextMenu( it );
+					contextMenu.setName( _name );
+					contextMenu.onClick = function(){
+						var node = new _node( it );
+						it.nodes.push( node );
+						node.move( it.mouseX-node.width/2, it.mouseY-node.height/2 );
+					};
+					return contextMenu;
+				} );
+			}
+		}
+
+		for( var i=0; i<contextMenus.length; i++ ){
+			var contextMenu = contextMenus[i]();
+			it.contextMenus.push( contextMenu );
+			contextMenu.move( it.modular.width/2-50, it.modular.height/2-20+i*16 );
+		}
+
+	} );
+
+	it.textbox.move( it.modular.width/2-40, it.modular.height/2-20 );
 
 };
 

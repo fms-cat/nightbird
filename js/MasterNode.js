@@ -27,7 +27,7 @@ Nightbird.MasterNode = function( _nightbird ){
 	it.contextMenus.pop();
 	it.contextMenus.unshift( function(){
 		var contextMenu = new Nightbird.ContextMenu( it.nightbird );
-		contextMenu.setName( 'Open master window' );
+		contextMenu.setName( 'Open window' );
 		contextMenu.onClick = function(){
 			var subWindow = window.open( 'about:blank', 'sub', 'width='+nightbird.width+',height='+nightbird.height+',menubar=no' );
 			subWindow.document.body.style.padding = 0;

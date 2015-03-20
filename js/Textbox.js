@@ -5,8 +5,8 @@ Nightbird.Textbox = function( _nightbird, _default, _onEnter ){
 	it.nightbird = _nightbird;
 	it.onEnter = _onEnter;
 
-	it.posX = 0;
-	it.posY = 0;
+	it.posX = it.nightbird.mouseX;
+	it.posY = it.nightbird.mouseY;
 	it.width = 80;
 	it.height = 12;
 
@@ -35,6 +35,7 @@ Nightbird.Textbox = function( _nightbird, _default, _onEnter ){
 
 	document.body.appendChild( it.input );
 	it.input.focus();
+	it.input.select();
 
 };
 

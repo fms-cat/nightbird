@@ -26,12 +26,11 @@ Nightbird.ValueNode.prototype.operateDown = function( _x, _y ){
 
 	var it = this;
 
-	if( Math.abs( it.width/2-_x ) < 30 && Math.abs( 10+(it.height-10)/2-_y ) < 6 ){
+	if( Math.abs( 50-_x ) < 30 && Math.abs( 20-_y ) < 6 ){
 		if( it.lastClick && it.nightbird.time-it.lastClick < .3 ){
 			it.nightbird.textbox = new Nightbird.Textbox( it.nightbird, it.value, function( _value ){
 				it.value = Number( _value );
 			} );
-			it.nightbird.textbox.move( it.posX+_x, it.posY+_y );
 		}else{
 			it.lastClick = it.nightbird.time;
 			it.operateBeginY = _y;
