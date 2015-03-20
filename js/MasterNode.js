@@ -16,7 +16,7 @@ Nightbird.MasterNode = function( _nightbird ){
 
 	it.context = it.canvas.getContext( '2d' );
 
-	var inputCanvas = new Nightbird.Connector( it.nightbird, false, 'canvas' );
+	var inputCanvas = new Nightbird.Connector( it, false, 'canvas' );
 	inputCanvas.setName( 'input' );
 	inputCanvas.onTransfer = function( _data ){
 		it.input = _data;
@@ -53,6 +53,16 @@ Nightbird.MasterNode.prototype.remove = function(){
 	var it = this;
 
 	it.disconnect();
+
+};
+
+Nightbird.MasterNode.prototype.save = function(){
+
+	var it = this;
+
+	var obj = Nightbird.Node.prototype.save.call( it );
+	obj.kind = 'MasterNode';
+	return obj;
 
 };
 

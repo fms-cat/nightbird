@@ -1,4 +1,4 @@
-Nightbird.TimeNode = function( _nightbird ){
+Node = function( _nightbird ){
 
 	var it = this;
 
@@ -10,7 +10,7 @@ Nightbird.TimeNode = function( _nightbird ){
 	it.begint = +new Date();
 	it.time = 0;
 
-	var outputValue = new Nightbird.Connector( it.nightbird, true, 'number' );
+	var outputValue = new Nightbird.Connector( it, true, 'number' );
 	outputValue.setName( 'time' );
 	outputValue.onTransfer = function(){
 		return Number( it.time );
@@ -20,10 +20,10 @@ Nightbird.TimeNode = function( _nightbird ){
 
 };
 
-Nightbird.TimeNode.prototype = Object.create( Nightbird.Node.prototype );
-Nightbird.TimeNode.prototype.constructor = Nightbird.TimeNode;
+Node.prototype = Object.create( Nightbird.Node.prototype );
+Node.prototype.constructor = Node;
 
-Nightbird.TimeNode.prototype.operateDown = function( _x, _y ){
+Node.prototype.operateDown = function( _x, _y ){
 
 	var it = this;
 
@@ -42,7 +42,7 @@ Nightbird.TimeNode.prototype.operateDown = function( _x, _y ){
 
 };
 
-Nightbird.TimeNode.prototype.operateMove = function( _x, _y ){
+Node.prototype.operateMove = function( _x, _y ){
 
 	var it = this;
 
@@ -52,7 +52,7 @@ Nightbird.TimeNode.prototype.operateMove = function( _x, _y ){
 
 };
 
-Nightbird.TimeNode.prototype.operateUp = function(){
+Node.prototype.operateUp = function(){
 
 	var it = this;
 
@@ -65,7 +65,7 @@ Nightbird.TimeNode.prototype.operateUp = function(){
 
 };
 
-Nightbird.TimeNode.prototype.draw = function(){
+Node.prototype.draw = function(){
 
 	var it = this;
 

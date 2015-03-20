@@ -1,4 +1,4 @@
-Nightbird.StringNode = function( _nightbird ){
+Node = function( _nightbird ){
 
 	var it = this;
 
@@ -9,7 +9,7 @@ Nightbird.StringNode = function( _nightbird ){
 
 	it.string = 'Yay';
 
-	var outputValue = new Nightbird.Connector( it.nightbird, true, 'string' );
+	var outputValue = new Nightbird.Connector( it, true, 'string' );
 	outputValue.setName( 'string' );
 	outputValue.onTransfer = function(){
 		return String( it.string );
@@ -19,10 +19,10 @@ Nightbird.StringNode = function( _nightbird ){
 
 };
 
-Nightbird.StringNode.prototype = Object.create( Nightbird.Node.prototype );
-Nightbird.StringNode.prototype.constructor = Nightbird.StringNode;
+Node.prototype = Object.create( Nightbird.Node.prototype );
+Node.prototype.constructor = Node;
 
-Nightbird.StringNode.prototype.operateDown = function( _x, _y ){
+Node.prototype.operateDown = function( _x, _y ){
 
 	var it = this;
 
@@ -42,7 +42,7 @@ Nightbird.StringNode.prototype.operateDown = function( _x, _y ){
 
 };
 
-Nightbird.StringNode.prototype.operateUp = function(){
+Node.prototype.operateUp = function(){
 
 	var it = this;
 
@@ -50,7 +50,7 @@ Nightbird.StringNode.prototype.operateUp = function(){
 
 };
 
-Nightbird.StringNode.prototype.draw = function(){
+Node.prototype.draw = function(){
 
 	var it = this;
 

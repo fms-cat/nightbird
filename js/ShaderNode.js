@@ -7,6 +7,7 @@ Nightbird.ShaderNode = function( _nightbird, _file ){
 
 	Nightbird.Node.call( it, _nightbird );
 	it.name = _file.name;
+	it.src = _file.name;
 	it.width = 100;
 	it.height = 10+100*it.nightbird.height/it.nightbird.width;
 
@@ -41,7 +42,7 @@ Nightbird.ShaderNode = function( _nightbird, _file ){
 	it.textures = [];
 	it.params = [];
 
-	var outputCanvas = new Nightbird.Connector( it.nightbird, true, 'canvas' );
+	var outputCanvas = new Nightbird.Connector( it, true, 'canvas' );
 	outputCanvas.setName( 'output' );
 	outputCanvas.onTransfer = function(){
 		return it.canvas;
@@ -117,7 +118,7 @@ Nightbird.ShaderNode.prototype.loadGlsl = function( _file ){
 			  gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR );
 				gl.bindTexture( gl.TEXTURE_2D, null );
 
-				var inputTexture = new Nightbird.Connector( it.nightbird, false, 'canvas' );
+				var inputTexture = new Nightbird.Connector( it, false, 'canvas' );
 				inputTexture.setName( 'texture'+i );
 				(function( _i ){
 					inputTexture.onTransfer = function( _data ){
@@ -125,13 +126,14 @@ Nightbird.ShaderNode.prototype.loadGlsl = function( _file ){
 					};
 				}( i ));
 				it.inputs.push( inputTexture );
+				it.setTexture( i, Nightbird.black1x1 );
 			}
 		}
 
 		for( var i=0; i<4; i++ ){
 			var re = new RegExp( "uniform float param"+i );
 			if( re.test( reader.result ) ){
-				var inputParam = new Nightbird.Connector( it.nightbird, false, 'number' );
+				var inputParam = new Nightbird.Connector( it, false, 'number' );
 				inputParam.setName( 'param'+i );
 				(function( _i ){
 					inputParam.onTransfer = function( _data ){
@@ -165,6 +167,17 @@ Nightbird.ShaderNode.prototype.setParam = function( _i, _param ){
 	var it = this;
 
 	it.params[_i] = _param;
+
+};
+
+Nightbird.ShaderNode.prototype.save = function(){
+
+	var it = this;
+
+	var obj = Nightbird.Node.prototype.save.call( it );
+	obj.kind = 'ShaderNode';
+	obj.src = it.src;
+	return obj;
 
 };
 

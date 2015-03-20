@@ -6,6 +6,7 @@ Nightbird.GifNode = function( _nightbird, _file ){
 
 	Nightbird.Node.call( it, _nightbird );
 	it.name = _file.name;
+	it.src = _file.name;
 	it.width = 100;
 	it.height = 10+100*it.nightbird.height/it.nightbird.width;
 
@@ -23,14 +24,14 @@ Nightbird.GifNode = function( _nightbird, _file ){
 
 	it.loadGif( _file );
 
-	var outputCanvas = new Nightbird.Connector( nightbird, true, 'canvas' );
+	var outputCanvas = new Nightbird.Connector( it, true, 'canvas' );
 	outputCanvas.setName( 'output' );
 	outputCanvas.onTransfer = function(){
 		return it.canvas;
 	};
 	it.outputs.push( outputCanvas );
 	it.move();
-	var inputFrame = new Nightbird.Connector( nightbird, false, 'number' );
+	var inputFrame = new Nightbird.Connector( it, false, 'number' );
 	inputFrame.setName( 'frame' );
 	inputFrame.onTransfer = function( _data ){
 		it.frame = _data;
@@ -67,7 +68,6 @@ Nightbird.GifNode.prototype.loadGif = function( _file ){
 	var it = this;
 
 	var reader = new FileReader();
-	var name = _file.name;
 	reader.onload = function(){
 
 		var dv = new DataView( reader.result );
@@ -86,40 +86,64 @@ Nightbird.GifNode.prototype.loadGif = function( _file ){
 			/* pixelAspectRatio */ offset ++;
 			/* gct */ if( gctFlag ){ offset += gctSize*3; }
 
-			/* Application Extension Test */
-			while( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0xff ){
-				/* extIntro, extLabel, blockSize, appId, appAuth */ offset += 14;
-				while( dv.getUint8( offset ) != 0x00 ){
-					offset += 1+dv.getUint8( offset )
-				}
-				/* terminator */ offset ++;
-			}
-			dataIndex[0] = offset;
+			var i = 0;
+			dataIndex[ i ] = offset;
+			while( dv.getUint8( offset ) != 0x3b ){
 
-			var i = 1;
-			/* Graphic Control Extension test */
-			while( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0xf9 ){
-				/* Graphic Control Extension - to bifFlags */ offset += 4;
-				if( !it.gif.delay ){ it.gif.delay = Math.max( dv.getUint16( offset, true ), 1 ); } offset += 2;
-				/* transparentIndex, terminator */ offset += 2;
-				/* Image Block Separator to Image Height */ offset += 9;
-				var lctFlag = ( dv.getUint8( offset )>>>7 );
-				var lctSize = Math.pow( 2, ( dv.getUint8( offset )&7 )+1 ); offset ++;
-				/* lct */ if( lctFlag ){ offset += lctSize*3; }
-				/* lzwMin */ offset ++;
-				while( dv.getUint8( offset ) != 0x00 ){
-					offset += 1+dv.getUint8( offset )
-				}
-				/* terminator */ offset ++;
-				dataIndex[i] = offset;
+				if( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0xff ){ // Application Extension
+					/* extIntro - appAuth */ offset += 14;
+					while( dv.getUint8( offset ) != 0x00 ){
+						offset += 1+dv.getUint8( offset )
+					}
+					/* terminator */ offset ++;
+				}else if( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0xfe ){ // Comment Extension
+					/* extIntro, extLabel */ offset += 2;
+					while( dv.getUint8( offset ) != 0x00 ){
+						offset += 1+dv.getUint8( offset )
+					}
+					/* terminator */ offset ++;
+				}else if( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0x01 ){ // Plain Text Extension
+					/* extIntro - TextBGColorIndex */ offset += 15;
+					while( dv.getUint8( offset ) != 0x00 ){
+						offset += 1+dv.getUint8( offset )
+					}
+					/* terminator */ offset ++;
+				}else if( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0xf9 ){ // Graphic Control Extension
+					/* Graphic Control Extension - bifFlags */ offset += 4;
+					if( !it.gif.delay ){
+						it.gif.delay = dv.getUint16( offset, true );
+						if( it.gif.delay == 0 ){
+							it.gif.delay = 5;
+						}
+					}
+					offset += 2;
+					/* transparentIndex, terminator */ offset += 2;
+				}else if( dv.getUint8( offset ) == 0x2c ){ // Image Block
+					/* Image Block Separator to Image Height */ offset += 9;
+					var lctFlag = ( dv.getUint8( offset )>>>7 );
+					var lctSize = Math.pow( 2, ( dv.getUint8( offset )&7 )+1 ); offset ++;
+					/* lct */ if( lctFlag ){ offset += lctSize*3; }
+					/* lzwMin */ offset ++;
+					while( dv.getUint8( offset ) != 0x00 ){
+						offset += 1+dv.getUint8( offset )
+					}
+					/* terminator */ offset ++;
 
-				var frame = new DataView( new ArrayBuffer( dataIndex[0] + dataIndex[i] - dataIndex[i-1] ) );
-				copyData( frame, 0, 0, dataIndex[0] );
-				copyData( frame, dataIndex[i-1], dataIndex[0], dataIndex[i]-dataIndex[i-1] );
-				var blob = new Blob( [ frame ], { "type" : "image/gif" } );
-				it.frames[i-1] = new Image();
-				it.frames[i-1].src = window.URL.createObjectURL( blob );
-				i ++;
+					i ++;
+					dataIndex[ i ] = offset;
+
+					var frame = new DataView( new ArrayBuffer( dataIndex[0] + dataIndex[i] - dataIndex[i-1] + 1 ) );
+					copyData( frame, 0, 0, dataIndex[0] );
+					copyData( frame, dataIndex[i-1], dataIndex[0], dataIndex[i] - dataIndex[i-1] );
+					frame.setUint8( dataIndex[0] + dataIndex[i] - dataIndex[i-1], 0x3b );
+					var blob = new Blob( [ frame ], { "type" : "image/gif" } );
+					it.frames[i-1] = new Image();
+					it.frames[i-1].src = window.URL.createObjectURL( blob );
+				}else{
+					console.error(offset);
+					break;
+				}
+
 			}
 			it.gif.length = i-1;
 		}else{
@@ -151,7 +175,18 @@ Nightbird.GifNode.prototype.loadGif = function( _file ){
 
 	reader.readAsArrayBuffer( _file );
 
-}
+};
+
+Nightbird.GifNode.prototype.save = function(){
+
+	var it = this;
+
+	var obj = Nightbird.Node.prototype.save.call( it );
+	obj.kind = 'GifNode';
+	obj.src = it.src;
+	return obj;
+
+};
 
 Nightbird.GifNode.prototype.draw = function(){
 
@@ -175,7 +210,6 @@ Nightbird.GifNode.prototype.draw = function(){
 				x = (w-(h*it.canvas.width/it.canvas.height))/2;
 				w = h*it.canvas.width/it.canvas.height;
 			}
-			var s = Math.min( it.gif.width, it.gif.height );
 			it.context.drawImage( it.frames[ frame ], x, y, w, h, 0, 0, it.canvas.width, it.canvas.height );
 		}
 
