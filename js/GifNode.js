@@ -86,40 +86,64 @@ Nightbird.GifNode.prototype.loadGif = function( _file ){
 			/* pixelAspectRatio */ offset ++;
 			/* gct */ if( gctFlag ){ offset += gctSize*3; }
 
-			/* Application Extension Test */
-			while( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0xff ){
-				/* extIntro, extLabel, blockSize, appId, appAuth */ offset += 14;
-				while( dv.getUint8( offset ) != 0x00 ){
-					offset += 1+dv.getUint8( offset )
-				}
-				/* terminator */ offset ++;
-			}
-			dataIndex[0] = offset;
+			var i = 0;
+			dataIndex[ i ] = offset;
+			while( dv.getUint8( offset ) != 0x3b ){
 
-			var i = 1;
-			/* Graphic Control Extension test */
-			while( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0xf9 ){
-				/* Graphic Control Extension - to bifFlags */ offset += 4;
-				if( !it.gif.delay ){ it.gif.delay = Math.max( dv.getUint16( offset, true ), 1 ); } offset += 2;
-				/* transparentIndex, terminator */ offset += 2;
-				/* Image Block Separator to Image Height */ offset += 9;
-				var lctFlag = ( dv.getUint8( offset )>>>7 );
-				var lctSize = Math.pow( 2, ( dv.getUint8( offset )&7 )+1 ); offset ++;
-				/* lct */ if( lctFlag ){ offset += lctSize*3; }
-				/* lzwMin */ offset ++;
-				while( dv.getUint8( offset ) != 0x00 ){
-					offset += 1+dv.getUint8( offset )
-				}
-				/* terminator */ offset ++;
-				dataIndex[i] = offset;
+				if( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0xff ){ // Application Extension
+					/* extIntro - appAuth */ offset += 14;
+					while( dv.getUint8( offset ) != 0x00 ){
+						offset += 1+dv.getUint8( offset )
+					}
+					/* terminator */ offset ++;
+				}else if( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0xfe ){ // Comment Extension
+					/* extIntro, extLabel */ offset += 2;
+					while( dv.getUint8( offset ) != 0x00 ){
+						offset += 1+dv.getUint8( offset )
+					}
+					/* terminator */ offset ++;
+				}else if( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0x01 ){ // Plain Text Extension
+					/* extIntro - TextBGColorIndex */ offset += 15;
+					while( dv.getUint8( offset ) != 0x00 ){
+						offset += 1+dv.getUint8( offset )
+					}
+					/* terminator */ offset ++;
+				}else if( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0xf9 ){ // Graphic Control Extension
+					/* Graphic Control Extension - bifFlags */ offset += 4;
+					if( !it.gif.delay ){
+						it.gif.delay = dv.getUint16( offset, true );
+						if( it.gif.delay == 0 ){
+							it.gif.delay = 5;
+						}
+					}
+					offset += 2;
+					/* transparentIndex, terminator */ offset += 2;
+				}else if( dv.getUint8( offset ) == 0x2c ){ // Image Block
+					/* Image Block Separator to Image Height */ offset += 9;
+					var lctFlag = ( dv.getUint8( offset )>>>7 );
+					var lctSize = Math.pow( 2, ( dv.getUint8( offset )&7 )+1 ); offset ++;
+					/* lct */ if( lctFlag ){ offset += lctSize*3; }
+					/* lzwMin */ offset ++;
+					while( dv.getUint8( offset ) != 0x00 ){
+						offset += 1+dv.getUint8( offset )
+					}
+					/* terminator */ offset ++;
 
-				var frame = new DataView( new ArrayBuffer( dataIndex[0] + dataIndex[i] - dataIndex[i-1] ) );
-				copyData( frame, 0, 0, dataIndex[0] );
-				copyData( frame, dataIndex[i-1], dataIndex[0], dataIndex[i]-dataIndex[i-1] );
-				var blob = new Blob( [ frame ], { "type" : "image/gif" } );
-				it.frames[i-1] = new Image();
-				it.frames[i-1].src = window.URL.createObjectURL( blob );
-				i ++;
+					i ++;
+					dataIndex[ i ] = offset;
+
+					var frame = new DataView( new ArrayBuffer( dataIndex[0] + dataIndex[i] - dataIndex[i-1] + 1 ) );
+					copyData( frame, 0, 0, dataIndex[0] );
+					copyData( frame, dataIndex[i-1], dataIndex[0], dataIndex[i] - dataIndex[i-1] );
+					frame.setUint8( dataIndex[0] + dataIndex[i] - dataIndex[i-1], 0x3b );
+					var blob = new Blob( [ frame ], { "type" : "image/gif" } );
+					it.frames[i-1] = new Image();
+					it.frames[i-1].src = window.URL.createObjectURL( blob );
+				}else{
+					console.error(offset);
+					break;
+				}
+
 			}
 			it.gif.length = i-1;
 		}else{

@@ -126,6 +126,7 @@ Nightbird.ShaderNode.prototype.loadGlsl = function( _file ){
 					};
 				}( i ));
 				it.inputs.push( inputTexture );
+				it.setTexture( i, Nightbird.black1x1 );
 			}
 		}
 
