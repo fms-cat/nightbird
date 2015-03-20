@@ -463,14 +463,6 @@ Nightbird.prototype.mouseup3 = function( _e ){
 
 					multipleContextMenus.push( function(){
 						var contextMenu = new Nightbird.ContextMenu( it );
-						contextMenu.setName( 'Save selected' );
-						contextMenu.onClick = function(){
-							it.save();
-						};
-						return contextMenu;
-					} );
-					multipleContextMenus.push( function(){
-						var contextMenu = new Nightbird.ContextMenu( it );
 						contextMenu.setName( 'Activate selected' );
 						contextMenu.onClick = function(){
 							for( var i=0; i<it.targets.length; i++ ){
@@ -669,19 +661,38 @@ Nightbird.prototype.loadFiles = function( _files ){
 		var ext = '';
 		if( /\.([^.]+)$/.test( file.name ) ){
 			ext = /\.([^.]+)$/.exec( file.name )[1];
+			ext = ext.toLowerCase();
 		}else{
 			console.error( file.name+' has no extension' );
+			continue;
 		}
 
 		if( ext == 'glsl' ){
+
 			var node = new Nightbird.ShaderNode( it, file );
 			it.nodes.push( node );
 			node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
+
+		}else if( ext == 'jpg' || ext == 'jpeg' || ext == 'png' ){
+
+			var node = new Nightbird.ImageNode( it, file );
+			it.nodes.push( node );
+			node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
+
+		}else if( ext == 'mp4' || ext == 'webm' ){
+
+			var node = new Nightbird.VideoNode( it, file );
+			it.nodes.push( node );
+			node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
+
 		}else if( ext == 'gif' ){
+
 			var node = new Nightbird.GifNode( it, file );
 			it.nodes.push( node );
 			node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
+
 		}else if( ext == 'js' ){
+
 			var reader = new FileReader();
 			reader.onload = function(){
 				try{
@@ -696,8 +707,11 @@ Nightbird.prototype.loadFiles = function( _files ){
 				}
 			}
 			reader.readAsText( file );
+
 		}else{
+
 			console.error( file.name+' is unsupported extension' );
+
 		}
 
 	}
@@ -737,7 +751,7 @@ Nightbird.prototype.save = function(){
 		var endNode = it.targets.indexOf( link.end.node );
 		if( startNode != -1 && endNode != -1 ){
 			var obj = {};
-			obj.kind = 'link';
+			obj.kind = 'Link';
 			obj.startNode = startNode;
 			obj.startConnector = it.targets[startNode].outputs.indexOf( link.start );
 			obj.endNode = endNode;
@@ -746,7 +760,7 @@ Nightbird.prototype.save = function(){
 		}
 	}
 
-	var a = document.createElement('a');
+	var a = document.createElement( 'a' );
 	var blob = new Blob( [ json ], { type : 'application/json' } );
 	var url = URL.createObjectURL( blob );
 	a.href = url;

@@ -151,7 +151,7 @@ Nightbird.GifNode.prototype.loadGif = function( _file ){
 
 	reader.readAsArrayBuffer( _file );
 
-}
+};
 
 Nightbird.GifNode.prototype.save = function(){
 
@@ -186,7 +186,6 @@ Nightbird.GifNode.prototype.draw = function(){
 				x = (w-(h*it.canvas.width/it.canvas.height))/2;
 				w = h*it.canvas.width/it.canvas.height;
 			}
-			var s = Math.min( it.gif.width, it.gif.height );
 			it.context.drawImage( it.frames[ frame ], x, y, w, h, 0, 0, it.canvas.width, it.canvas.height );
 		}
 
