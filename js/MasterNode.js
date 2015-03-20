@@ -27,7 +27,7 @@ Nightbird.MasterNode = function( _nightbird ){
 	it.contextMenus.pop();
 	it.contextMenus.unshift( function(){
 		var contextMenu = new Nightbird.ContextMenu( it.nightbird );
-		contextMenu.setName( 'Open master window' );
+		contextMenu.setName( 'Open window' );
 		contextMenu.onClick = function(){
 			var subWindow = window.open( 'about:blank', 'sub', 'width='+nightbird.width+',height='+nightbird.height+',menubar=no' );
 			subWindow.document.body.style.padding = 0;
@@ -61,10 +61,10 @@ Nightbird.MasterNode.prototype.draw = function(){
 	var it = this;
 
 	if( it.active ){
+		it.context.clearRect( 0, 0, it.canvas.width, it.canvas.height );
+		it.context.fillRect( 0, 0, it.canvas.width, it.canvas.height );
 		if( it.input ){
 			it.context.drawImage( it.input, 0, 0, it.canvas.width, it.canvas.height );
-		}else{
-			it.context.fillRect( 0, 0, it.canvas.width, it.canvas.height );
 		}
 	}
 

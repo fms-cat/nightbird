@@ -82,9 +82,12 @@ Nightbird.Link.prototype.draw = function(){
 	switch( it.type ){
 		case 'canvas' : col = '#06f'; break;
 		case 'number' : col = '#f06'; break;
+		case 'string' : col = '#fa0'; break;
 	}
 	if( it.grabStart || it.grabEnd ){
-		it.nightbird.modularContext.globalAlpha = .6;
+		col = col.replace( 'f', '8' );
+		col = col.replace( 'a', '5' );
+		col = col.replace( '6', '3' );
 	}
 	it.nightbird.modularContext.strokeStyle = col;
 	it.nightbird.modularContext.stroke();

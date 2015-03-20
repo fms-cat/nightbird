@@ -72,7 +72,6 @@ Nightbird.Node.prototype.disconnect = function(){
 
 	for( var i=0; i<it.inputs.length; i++ ){
 		var connector = it.inputs[i];
-		console.log(connector);
 		for( var il=connector.links.length-1; 0<=il; il-- ){
 			it.nightbird.links.splice( it.nightbird.links.indexOf( connector.links[il] ), 1 );
 			connector.links[il].remove();

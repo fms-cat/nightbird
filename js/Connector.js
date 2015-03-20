@@ -53,12 +53,27 @@ Nightbird.Connector.prototype.draw = function(){
 
 	var it = this;
 
+	if( Nightbird.dist( it.nightbird.mouseX, it.nightbird.mouseY, it.posX, it.posY ) < it.radius ){
+		it.radius = 7;
+	}else{
+		it.radius = 5;
+	}
+
 	it.nightbird.modularContext.beginPath();
 	it.nightbird.modularContext.arc( it.posX, it.posY, it.radius, 0, 7, false );
 	var col;
 	switch( it.type ){
 		case 'canvas' : col = '#06f'; break;
 		case 'number' : col = '#f06'; break;
+		case 'string' : col = '#fa0'; break;
+	}
+	if( 0 < it.nightbird.grabLinks.length ){
+		if( it.nightbird.grabLinks[0].type == it.type && ( it.nightbird.grabLinks[0].grabEnd ^ it.isOutput ) ){
+		}else{
+			col = col.replace( 'f', '8' );
+			col = col.replace( 'a', '5' );
+			col = col.replace( '6', '3' );
+		}
 	}
 	it.nightbird.modularContext.fillStyle = col;
 	it.nightbird.modularContext.fill();
