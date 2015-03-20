@@ -1,4 +1,4 @@
-Nightbird.TextNode = function( _nightbird ){
+Node = function( _nightbird ){
 
 	var it = this;
 
@@ -17,21 +17,21 @@ Nightbird.TextNode = function( _nightbird ){
 
 	it.context = it.canvas.getContext( '2d' );
 
-	var outputCanvas = new Nightbird.Connector( nightbird, true, 'canvas' );
+	var outputCanvas = new Nightbird.Connector( it, true, 'canvas' );
 	outputCanvas.setName( 'output' );
 	outputCanvas.onTransfer = function(){
 		return it.canvas;
 	};
 	it.outputs.push( outputCanvas );
 	it.move();
-	var inputText = new Nightbird.Connector( it.nightbird, false, 'string' );
+	var inputText = new Nightbird.Connector( it, false, 'string' );
 	inputText.setName( 'text' );
 	inputText.onTransfer = function( _data ){
 		it.text = _data;
 	};
 	it.inputs.push( inputText );
 	it.move();
-	var inputFont = new Nightbird.Connector( it.nightbird, false, 'string' );
+	var inputFont = new Nightbird.Connector( it, false, 'string' );
 	inputFont.setName( 'font' );
 	inputFont.onTransfer = function( _data ){
 		it.font = _data;
@@ -41,10 +41,10 @@ Nightbird.TextNode = function( _nightbird ){
 
 };
 
-Nightbird.TextNode.prototype = Object.create( Nightbird.Node.prototype );
-Nightbird.TextNode.prototype.constructor = Nightbird.TextNode;
+Node.prototype = Object.create( Nightbird.Node.prototype );
+Node.prototype.constructor = Node;
 
-Nightbird.TextNode.prototype.draw = function(){
+Node.prototype.draw = function(){
 
 	var it = this;
 

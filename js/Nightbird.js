@@ -463,7 +463,15 @@ Nightbird.prototype.mouseup3 = function( _e ){
 
 					multipleContextMenus.push( function(){
 						var contextMenu = new Nightbird.ContextMenu( it );
-						contextMenu.setName( 'Activate all' );
+						contextMenu.setName( 'Save selected' );
+						contextMenu.onClick = function(){
+							it.save();
+						};
+						return contextMenu;
+					} );
+					multipleContextMenus.push( function(){
+						var contextMenu = new Nightbird.ContextMenu( it );
+						contextMenu.setName( 'Activate selected' );
 						contextMenu.onClick = function(){
 							for( var i=0; i<it.targets.length; i++ ){
 								var node = it.targets[i];
@@ -474,7 +482,7 @@ Nightbird.prototype.mouseup3 = function( _e ){
 					} );
 					multipleContextMenus.push( function(){
 						var contextMenu = new Nightbird.ContextMenu( it );
-						contextMenu.setName( 'Dectivate all' );
+						contextMenu.setName( 'Dectivate selected' );
 						contextMenu.onClick = function(){
 							for( var i=0; i<it.targets.length; i++ ){
 								var node = it.targets[i];
@@ -485,7 +493,7 @@ Nightbird.prototype.mouseup3 = function( _e ){
 					} );
 					multipleContextMenus.push( function(){
 						var contextMenu = new Nightbird.ContextMenu( it );
-						contextMenu.setName( 'Disconnect all' );
+						contextMenu.setName( 'Disconnect selected' );
 						contextMenu.onClick = function(){
 							for( var i=0; i<it.targets.length; i++ ){
 								var node = it.targets[i];
@@ -496,7 +504,7 @@ Nightbird.prototype.mouseup3 = function( _e ){
 					} );
 					multipleContextMenus.push( function(){
 						var contextMenu = new Nightbird.ContextMenu( it );
-						contextMenu.setName( 'Remove all' );
+						contextMenu.setName( 'Remove selected' );
 						contextMenu.onClick = function(){
 							for( var i=0; i<it.targets.length; i++ ){
 								var node = it.targets[i];
@@ -524,14 +532,6 @@ Nightbird.prototype.mouseup3 = function( _e ){
 		it.targets = [];
 		var contextMenus = [];
 
-		contextMenus.push( function(){
-			var contextMenu = new Nightbird.ContextMenu( it );
-			contextMenu.setName( 'Search Nodes' );
-			contextMenu.onClick = function(){
-				it.searchNodes();
-			};
-			return contextMenu;
-		} );
 		contextMenus.push( function(){
 			var contextMenu = new Nightbird.ContextMenu( it );
 			contextMenu.setName( 'Load files' );
@@ -654,7 +654,6 @@ Nightbird.prototype.keydown = function( _e ){
 
 	if( k == 32 ){
 		_e.preventDefault();
-		it.searchNodes();
 		it.selectContextMenu = null;
 		it.contextMenus = [];
 	}
@@ -682,56 +681,26 @@ Nightbird.prototype.loadFiles = function( _files ){
 			var node = new Nightbird.GifNode( it, file );
 			it.nodes.push( node );
 			node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
+		}else if( ext == 'js' ){
+			var reader = new FileReader();
+			reader.onload = function(){
+				try{
+					eval( reader.result );
+				}catch( _e ){
+					console.error( _e.message );
+				}
+				if( Node ){
+					var node = new Node( it );
+					it.nodes.push( node );
+					node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
+				}
+			}
+			reader.readAsText( file );
 		}else{
 			console.error( file.name+' is unsupported extension' );
 		}
 
 	}
-
-};
-
-Nightbird.prototype.searchNodes = function( _query ){
-
-	var it = this;
-
-
-	it.textbox = new Nightbird.Textbox( it, '', function( _value ){
-
-		var query = new RegExp( _value, 'i' );
-
-		contextMenus = [];
-
-		newNodeMenu( 'EzFormula', Nightbird.EzFormulaNode );
-		newNodeMenu( 'Formula', Nightbird.FormulaNode );
-		newNodeMenu( 'String', Nightbird.StringNode );
-		newNodeMenu( 'Text', Nightbird.TextNode );
-		newNodeMenu( 'Time', Nightbird.TimeNode );
-		newNodeMenu( 'Value', Nightbird.ValueNode );
-
-		function newNodeMenu( _name, _node ){
-			if( query.test( _name ) ){
-				contextMenus.push( function(){
-					var contextMenu = new Nightbird.ContextMenu( it );
-					contextMenu.setName( _name );
-					contextMenu.onClick = function(){
-						var node = new _node( it );
-						it.nodes.push( node );
-						node.move( it.mouseX-node.width/2, it.mouseY-node.height/2 );
-					};
-					return contextMenu;
-				} );
-			}
-		}
-
-		for( var i=0; i<contextMenus.length; i++ ){
-			var contextMenu = contextMenus[i]();
-			it.contextMenus.push( contextMenu );
-			contextMenu.move( it.modular.width/2-50, it.modular.height/2-20+i*16 );
-		}
-
-	} );
-
-	it.textbox.move( it.modular.width/2-40, it.modular.height/2-20 );
 
 };
 
@@ -750,6 +719,40 @@ Nightbird.prototype.setModularSize = function( _w, _h ){
 
 	it.modular.width = _w;
 	it.modular.height = _h;
+
+};
+
+Nightbird.prototype.save = function(){
+
+	var it = this;
+
+	var json = '';
+	for( var i=0; i<it.targets.length; i++ ){
+		json += JSON.stringify( it.targets[i].save() );
+	}
+
+	for( var i=0; i<it.links.length; i++ ){
+		var link = it.links[i];
+		var startNode = it.targets.indexOf( link.start.node );
+		var endNode = it.targets.indexOf( link.end.node );
+		if( startNode != -1 && endNode != -1 ){
+			var obj = {};
+			obj.kind = 'link';
+			obj.startNode = startNode;
+			obj.startConnector = it.targets[startNode].outputs.indexOf( link.start );
+			obj.endNode = endNode;
+			obj.endConnector = it.targets[endNode].inputs.indexOf( link.end );
+			json += JSON.stringify( obj );
+		}
+	}
+
+	var a = document.createElement('a');
+	var blob = new Blob( [ json ], { type : 'application/json' } );
+	var url = URL.createObjectURL( blob );
+	a.href = url;
+	a.download = 'nightbird.txt';
+	a.click();
+	URL.revokeObjectURL( url );
 
 };
 

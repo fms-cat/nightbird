@@ -1,4 +1,4 @@
-Nightbird.ValueNode = function( _nightbird ){
+Node = function( _nightbird ){
 
 	var it = this;
 
@@ -9,7 +9,7 @@ Nightbird.ValueNode = function( _nightbird ){
 
 	it.value = 0;
 
-	var outputValue = new Nightbird.Connector( it.nightbird, true, 'number' );
+	var outputValue = new Nightbird.Connector( it, true, 'number' );
 	outputValue.setName( 'value' );
 	outputValue.onTransfer = function(){
 		return Number( it.value );
@@ -19,10 +19,10 @@ Nightbird.ValueNode = function( _nightbird ){
 
 };
 
-Nightbird.ValueNode.prototype = Object.create( Nightbird.Node.prototype );
-Nightbird.ValueNode.prototype.constructor = Nightbird.ValueNode;
+Node.prototype = Object.create( Nightbird.Node.prototype );
+Node.prototype.constructor = Node;
 
-Nightbird.ValueNode.prototype.operateDown = function( _x, _y ){
+Node.prototype.operateDown = function( _x, _y ){
 
 	var it = this;
 
@@ -44,7 +44,7 @@ Nightbird.ValueNode.prototype.operateDown = function( _x, _y ){
 
 };
 
-Nightbird.ValueNode.prototype.operateMove = function( _x, _y ){
+Node.prototype.operateMove = function( _x, _y ){
 
 	var it = this;
 
@@ -54,7 +54,7 @@ Nightbird.ValueNode.prototype.operateMove = function( _x, _y ){
 
 };
 
-Nightbird.ValueNode.prototype.operateUp = function(){
+Node.prototype.operateUp = function(){
 
 	var it = this;
 
@@ -62,7 +62,7 @@ Nightbird.ValueNode.prototype.operateUp = function(){
 
 };
 
-Nightbird.ValueNode.prototype.draw = function(){
+Node.prototype.draw = function(){
 
 	var it = this;
 

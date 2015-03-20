@@ -66,6 +66,33 @@ Nightbird.Node.prototype.move = function( _x, _y ){
 
 };
 
+Nightbird.Node.prototype.save = function(){
+
+	var it = this;
+
+	var obj = {};
+
+	obj.kind = 'Node';
+	obj.posX = it.posX;
+	obj.posY = it.posY;
+	obj.active = it.active;
+
+	return obj;
+
+};
+
+Nightbird.Node.prototype.load = function( _str ){
+
+	var it = this;
+
+	var obj = JSON.parse( _str );
+
+	for( var key in obj ){
+		it[key] = obj[key];
+	}
+
+};
+
 Nightbird.Node.prototype.disconnect = function(){
 
 	var it = this;

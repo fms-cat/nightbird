@@ -6,6 +6,7 @@ Nightbird.GifNode = function( _nightbird, _file ){
 
 	Nightbird.Node.call( it, _nightbird );
 	it.name = _file.name;
+	it.src = _file.name;
 	it.width = 100;
 	it.height = 10+100*it.nightbird.height/it.nightbird.width;
 
@@ -23,14 +24,14 @@ Nightbird.GifNode = function( _nightbird, _file ){
 
 	it.loadGif( _file );
 
-	var outputCanvas = new Nightbird.Connector( nightbird, true, 'canvas' );
+	var outputCanvas = new Nightbird.Connector( it, true, 'canvas' );
 	outputCanvas.setName( 'output' );
 	outputCanvas.onTransfer = function(){
 		return it.canvas;
 	};
 	it.outputs.push( outputCanvas );
 	it.move();
-	var inputFrame = new Nightbird.Connector( nightbird, false, 'number' );
+	var inputFrame = new Nightbird.Connector( it, false, 'number' );
 	inputFrame.setName( 'frame' );
 	inputFrame.onTransfer = function( _data ){
 		it.frame = _data;
@@ -67,7 +68,6 @@ Nightbird.GifNode.prototype.loadGif = function( _file ){
 	var it = this;
 
 	var reader = new FileReader();
-	var name = _file.name;
 	reader.onload = function(){
 
 		var dv = new DataView( reader.result );
@@ -152,6 +152,17 @@ Nightbird.GifNode.prototype.loadGif = function( _file ){
 	reader.readAsArrayBuffer( _file );
 
 }
+
+Nightbird.GifNode.prototype.save = function(){
+
+	var it = this;
+
+	var obj = Nightbird.Node.prototype.save.call( it );
+	obj.kind = 'GifNode';
+	obj.src = it.src;
+	return obj;
+
+};
 
 Nightbird.GifNode.prototype.draw = function(){
 

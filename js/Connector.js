@@ -1,8 +1,9 @@
-Nightbird.Connector = function( _nightbird, _isOutput, _type ){
+Nightbird.Connector = function( _node, _isOutput, _type ){
 
 	var it = this;
 
-	it.nightbird = _nightbird;
+	it.node = _node;
+	it.nightbird = it.node.nightbird;
 	it.isOutput = _isOutput;
 	it.type = _type;
 
