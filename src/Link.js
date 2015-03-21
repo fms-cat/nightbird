@@ -40,11 +40,11 @@ Nightbird.Link.prototype.remove = function(){
 
 	var it = this;
 
-	if( it.type = 'number' ){
+	if( it.type == 'number' ){
 		it.end.onTransfer( Nightbird.black1x1 );
-	}else if( it.type = 'number' ){
+	}else if( it.type == 'number' ){
 		it.end.onTransfer( 0 );
-	}else if( it.type = 'string' ){
+	}else if( it.type == 'string' ){
 		it.end.onTransfer( '' );
 	}
 	if( it.start ){
