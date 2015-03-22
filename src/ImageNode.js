@@ -1,5 +1,3 @@
-// reference : http://www.tohoho-web.com/wwwgif.htm
-
 Nightbird.ImageNode = function( _nightbird, _file ){
 
 	var it = this;
