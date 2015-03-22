@@ -1,12 +1,14 @@
-Nightbird.VideoNode = function( _nightbird, _file ){
+Node = function( _nightbird ){
 
 	var it = this;
 
 	Nightbird.Node.call( it, _nightbird );
-	it.name = _file.name;
-	it.src = _file.name;
+	it.name = 'Camera';
 	it.width = 100;
 	it.height = 10+100*it.nightbird.height/it.nightbird.width;
+
+	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+  window.URL = window.URL || window.webkitURL;
 
 	it.canvas = document.createElement( 'canvas' );
 	it.canvas.width = it.nightbird.width;
@@ -16,10 +18,22 @@ Nightbird.VideoNode = function( _nightbird, _file ){
 
 	it.video = document.createElement( 'video' );
 	it.video.autoplay = 'true';
-	it.video.loop = 'true';
-	it.video.muted = 'true';
 
-	it.loadVideo( _file );
+	it.error = '';
+  it.localMediaStream = null;
+
+  if( navigator.getUserMedia ){
+    navigator.getUserMedia( { // navigator.getUserMedia 第一引数、プロパティ
+      video : true, audio : false
+    }, function( _stream ){ // navigator.getUserMedia 第二引数、成功時ストリーム
+      it.localMediaStream = _stream;
+      it.video.src = window.URL.createObjectURL( it.localMediaStream );
+    }, function( _error ){ // navigator.getUserMedia 第三引数、失敗時エラー
+      it.error = 'getUserMedia error: '+String( _error.code );
+    } );
+  }else{
+    it.error = 'This browser does not support webcam';
+  }
 
 	var outputCanvas = new Nightbird.Connector( it, true, 'canvas' );
 	outputCanvas.setName( 'output' );
@@ -31,34 +45,10 @@ Nightbird.VideoNode = function( _nightbird, _file ){
 
 };
 
-Nightbird.VideoNode.prototype = Object.create( Nightbird.Node.prototype );
-Nightbird.VideoNode.prototype.constructor = Nightbird.VideoNode;
+Node.prototype = Object.create( Nightbird.Node.prototype );
+Node.prototype.constructor = Node;
 
-Nightbird.VideoNode.prototype.loadVideo = function( _file ){
-
-	var it = this;
-
-	var reader = new FileReader();
-	reader.onload = function(){
-		it.video.src = reader.result;
-	};
-
-	reader.readAsDataURL( _file );
-
-};
-
-Nightbird.VideoNode.prototype.save = function(){
-
-	var it = this;
-
-	var obj = Nightbird.Node.prototype.save.call( it );
-	obj.kind = 'VideoNode';
-	obj.src = it.src;
-	return obj;
-
-};
-
-Nightbird.VideoNode.prototype.draw = function(){
+Node.prototype.draw = function(){
 
 	var it = this;
 
