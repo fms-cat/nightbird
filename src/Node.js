@@ -5,7 +5,7 @@ Nightbird.Node = function( _nightbird ){
 	it.nightbird = _nightbird;
 
 	it.active = true;
-	it.name = 'Node';
+	it.name = '';
 	it.nameColor = '#ddd';
 
 	it.posX = 32;
@@ -73,6 +73,7 @@ Nightbird.Node.prototype.save = function(){
 	var obj = {};
 
 	obj.kind = 'Node';
+	obj.name = it.name;
 	obj.posX = it.posX;
 	obj.posY = it.posY;
 	obj.active = it.active;
@@ -81,15 +82,14 @@ Nightbird.Node.prototype.save = function(){
 
 };
 
-Nightbird.Node.prototype.load = function( _str ){
+Nightbird.Node.prototype.load = function( _obj ){
 
 	var it = this;
 
-	var obj = JSON.parse( _str );
-
-	for( var key in obj ){
-		it[key] = obj[key];
+	for( var key in _obj ){
+		it[key] = _obj[key];
 	}
+	it.move();
 
 };
 

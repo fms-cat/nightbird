@@ -65,6 +65,16 @@ Node.prototype.operateUp = function(){
 
 };
 
+Node.prototype.save = function( _hashed ){
+
+	var it = this;
+
+	var obj = Nightbird.Node.prototype.save.call( it, _hashed );
+	obj.time = it.time;
+	return obj;
+
+};
+
 Node.prototype.draw = function(){
 
 	var it = this;

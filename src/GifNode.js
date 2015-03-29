@@ -1,12 +1,10 @@
 // reference : http://www.tohoho-web.com/wwwgif.htm
 
-Nightbird.GifNode = function( _nightbird, _file ){
+Nightbird.GifNode = function( _nightbird, _ab ){
 
 	var it = this;
 
 	Nightbird.Node.call( it, _nightbird );
-	it.name = _file.name;
-	it.src = _file.name;
 	it.width = 100;
 	it.height = 10+100*it.nightbird.height/it.nightbird.width;
 
@@ -22,7 +20,7 @@ Nightbird.GifNode = function( _nightbird, _file ){
 
 	it.gif = {};
 
-	it.loadGif( _file );
+	it.loadGif( _ab );
 
 	var outputCanvas = new Nightbird.Connector( it, true, 'canvas' );
 	outputCanvas.setName( 'output' );
@@ -63,117 +61,115 @@ Nightbird.GifNode = function( _nightbird, _file ){
 Nightbird.GifNode.prototype = Object.create( Nightbird.Node.prototype );
 Nightbird.GifNode.prototype.constructor = Nightbird.GifNode;
 
-Nightbird.GifNode.prototype.loadGif = function( _file ){
+Nightbird.GifNode.prototype.loadGif = function( _ab ){
 
 	var it = this;
 
-	var reader = new FileReader();
-	reader.onload = function(){
+	var array = new Uint8Array( _ab );
+	var dataIndex = [];
 
-		var dv = new DataView( reader.result );
-		var dataIndex = [];
+	var offset = 0;
+	/* magic number 'GIF' */ offset += 3;
+	var gifVersion = getAscii( offset, 3 ); offset += 3;
+	if( gifVersion == '89a' ){
+		it.gif.width = array[ offset ] + ( array[ offset+1 ]<<8 ); offset += 2;
+		it.gif.height = array[ offset ] + ( array[ offset+1 ]<<8 ); offset += 2;
+		var gctFlag = array[ offset ]>>>7;
+		var colorRes = ( array[ offset ]>>>4&7 )+1;
+		var gctSize = Math.pow( 2, ( array[ offset ]&7 )+1 ); offset ++;
+		/* bgColorIndex */ offset ++;
+		/* pixelAspectRatio */ offset ++;
+		/* gct */ if( gctFlag ){ offset += gctSize*3; }
 
-		var offset = 0;
-		/* magic number 'GIF' */ offset += 3;
-		var gifVersion = getAscii( offset, 3 ); offset += 3;
-		if( gifVersion == '89a' ){
-			it.gif.width = dv.getUint16( offset, true ); offset += 2;
-			it.gif.height = dv.getUint16( offset, true ); offset += 2;
-			var gctFlag = ( dv.getUint8( offset )>>>7 );
-			var colorRes = ( dv.getUint8( offset )>>>4&7 )+1;
-			var gctSize = Math.pow( 2, ( dv.getUint8( offset )&7 )+1 ); offset ++;
-			/* bgColorIndex */ offset ++;
-			/* pixelAspectRatio */ offset ++;
-			/* gct */ if( gctFlag ){ offset += gctSize*3; }
+		var i = 0;
+		dataIndex[ i ] = offset;
+		while( array[ offset ] != 0x3b ){
 
-			var i = 0;
-			dataIndex[ i ] = offset;
-			while( dv.getUint8( offset ) != 0x3b ){
-
-				if( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0xff ){ // Application Extension
-					/* extIntro - appAuth */ offset += 14;
-					while( dv.getUint8( offset ) != 0x00 ){
-						offset += 1+dv.getUint8( offset )
-					}
-					/* terminator */ offset ++;
-				}else if( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0xfe ){ // Comment Extension
-					/* extIntro, extLabel */ offset += 2;
-					while( dv.getUint8( offset ) != 0x00 ){
-						offset += 1+dv.getUint8( offset )
-					}
-					/* terminator */ offset ++;
-				}else if( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0x01 ){ // Plain Text Extension
-					/* extIntro - TextBGColorIndex */ offset += 15;
-					while( dv.getUint8( offset ) != 0x00 ){
-						offset += 1+dv.getUint8( offset )
-					}
-					/* terminator */ offset ++;
-				}else if( dv.getUint8( offset ) == 0x21 && dv.getUint8( offset+1 ) == 0xf9 ){ // Graphic Control Extension
-					/* Graphic Control Extension - bifFlags */ offset += 4;
-					if( !it.gif.delay ){
-						it.gif.delay = dv.getUint16( offset, true );
-						if( it.gif.delay == 0 ){
-							it.gif.delay = 5;
-						}
-					}
-					offset += 2;
-					/* transparentIndex, terminator */ offset += 2;
-				}else if( dv.getUint8( offset ) == 0x2c ){ // Image Block
-					/* Image Block Separator to Image Height */ offset += 9;
-					var lctFlag = ( dv.getUint8( offset )>>>7 );
-					var lctSize = Math.pow( 2, ( dv.getUint8( offset )&7 )+1 ); offset ++;
-					/* lct */ if( lctFlag ){ offset += lctSize*3; }
-					/* lzwMin */ offset ++;
-					while( dv.getUint8( offset ) != 0x00 ){
-						offset += 1+dv.getUint8( offset )
-					}
-					/* terminator */ offset ++;
-
-					i ++;
-					dataIndex[ i ] = offset;
-
-					var frame = new DataView( new ArrayBuffer( dataIndex[0] + dataIndex[i] - dataIndex[i-1] + 1 ) );
-					copyData( frame, 0, 0, dataIndex[0] );
-					copyData( frame, dataIndex[i-1], dataIndex[0], dataIndex[i] - dataIndex[i-1] );
-					frame.setUint8( dataIndex[0] + dataIndex[i] - dataIndex[i-1], 0x3b );
-					var blob = new Blob( [ frame ], { "type" : "image/gif" } );
-					it.frames[i-1] = new Image();
-					it.frames[i-1].src = window.URL.createObjectURL( blob );
-				}else{
-					console.error(offset);
-					break;
+			if( array[ offset ] == 0x21 && array[ offset+1 ] == 0xff ){ // Application Extension
+				/* extIntro - appAuth */ offset += 14;
+				while( array[ offset ] != 0x00 ){
+					offset += 1+array[ offset ];
 				}
+				/* terminator */ offset ++;
+			}else if( array[ offset ] == 0x21 && array[ offset+1 ] == 0xfe ){ // Comment Extension
+				/* extIntro, extLabel */ offset += 2;
+				while( array[ offset ] != 0x00 ){
+					offset += 1+array[ offset ];
+				}
+				/* terminator */ offset ++;
+			}else if( array[ offset ] == 0x21 && array[ offset+1 ] == 0x01 ){ // Plain Text Extension
+				/* extIntro - TextBGColorIndex */ offset += 15;
+				while( array[ offset ] != 0x00 ){
+					offset += 1+array[ offset ];
+				}
+				/* terminator */ offset ++;
+			}else if( array[ offset ] == 0x21 && array[ offset+1 ] == 0xf9 ){ // Graphic Control Extension
+				/* Graphic Control Extension - bifFlags */ offset += 4;
+				if( !it.gif.delay ){
+					it.gif.delay = array[ offset ] + ( array[ offset+1 ]<<8 );
+					if( it.gif.delay == 0 ){
+						it.gif.delay = 5;
+					}
+				}
+				offset += 2;
+				/* transparentIndex, terminator */ offset += 2;
+			}else if( array[ offset ] == 0x2c ){ // Image Block
+				/* Image Block Separator to Image Height */ offset += 9;
+				var lctFlag = ( array[ offset ]>>>7 );
+				var lctSize = Math.pow( 2, ( array[ offset ]&7 )+1 ); offset ++;
+				/* lct */ if( lctFlag ){ offset += lctSize*3; }
+				/* lzwMin */ offset ++;
+				while( array[ offset ] != 0x00 ){
+					offset += 1+array[ offset ];
+				}
+				/* terminator */ offset ++;
 
+				i ++;
+				dataIndex[ i ] = offset;
+
+				var frame = new Uint8Array( dataIndex[0] + dataIndex[i] - dataIndex[i-1] + 1 );
+				frame.set( array.subarray( 0, dataIndex[0] ), 0 );
+				frame.set( array.subarray( dataIndex[i-1], dataIndex[i] ), dataIndex[0] );
+				frame.set( [ 0x3b ], dataIndex[0] + dataIndex[i] - dataIndex[i-1] );
+				var blob = new Blob( [ frame ], { "type" : "image/gif" } );
+				it.frames[i-1] = new Image();
+				it.frames[i-1].src = window.URL.createObjectURL( blob );
+			}else{
+				console.error( 'GifNode: error on '+offset+' byte' );
+				break;
 			}
-			it.gif.length = i-1;
-		}else{
-			it.gif.width = dv.getUint16( offset, true ); offset += 2;
-			it.gif.height = dv.getUint16( offset, true ); offset += 2;
-			var blob = new Blob( [ dv ], { "type" : "image/gif" } );
-			it.frames[0] = new Image();
-			it.frames[0].src = window.URL.createObjectURL( blob );
-			it.gif.length = 1;
-			it.gif.delay = 1;
+
 		}
+		it.gif.length = i-1;
+	}else{
+		it.gif.width = array[ offset ] + ( array[ offset+1 ]<<8 ); offset += 2;
+		it.gif.height = array[ offset ] + ( array[ offset+1 ]<<8 ); offset += 2;
+		var blob = new Blob( [ array ], { "type" : "image/gif" } );
+		it.frames[0] = new Image();
+		it.frames[0].src = window.URL.createObjectURL( blob );
+		it.gif.length = 1;
+		it.gif.delay = 1;
+	}
 
-		function copyData( _to, _fromOffset, _toOffset, _length ){
-			for( var i=0; i<_length; i++ ){
-				_to.setUint8( _toOffset+i, dv.getUint8( _fromOffset+i ) );
-			}
+	function getAscii( _offset, _length ){
+		var ret = '';
+		for( var i=0; i<_length; i++ ){
+			var byte = array[ _offset+i ];
+			ret += String.fromCharCode( byte );
 		}
+		return ret;
+	}
 
-		function getAscii( _offset, _length ){
-			var ret = '';
-			for( var i=0; i<_length; i++ ){
-				var byte = dv.getInt8( _offset+i );
-				ret += String.fromCharCode( byte );
-			}
-			return ret;
-		};
+};
 
-	};
+Nightbird.GifNode.prototype.remove = function(){
 
-	reader.readAsArrayBuffer( _file );
+	var it = this;
+
+	for( var frame of it.frames ){
+		window.URL.revokeObjectURL( frame.src );
+	}
+	Nightbird.Node.prototype.remove.call( it );
 
 };
 
@@ -183,7 +179,6 @@ Nightbird.GifNode.prototype.save = function(){
 
 	var obj = Nightbird.Node.prototype.save.call( it );
 	obj.kind = 'GifNode';
-	obj.src = it.src;
 	return obj;
 
 };

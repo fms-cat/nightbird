@@ -1,10 +1,8 @@
-Nightbird.VideoNode = function( _nightbird, _file ){
+Nightbird.VideoNode = function( _nightbird, _ab ){
 
 	var it = this;
 
 	Nightbird.Node.call( it, _nightbird );
-	it.name = _file.name;
-	it.src = _file.name;
 	it.width = 100;
 	it.height = 10+100*it.nightbird.height/it.nightbird.width;
 
@@ -19,7 +17,7 @@ Nightbird.VideoNode = function( _nightbird, _file ){
 	it.video.loop = 'true';
 	it.video.muted = 'true';
 
-	it.loadVideo( _file );
+	it.loadVideo( _ab );
 
 	var outputCanvas = new Nightbird.Connector( it, true, 'canvas' );
 	outputCanvas.setName( 'output' );
@@ -34,26 +32,30 @@ Nightbird.VideoNode = function( _nightbird, _file ){
 Nightbird.VideoNode.prototype = Object.create( Nightbird.Node.prototype );
 Nightbird.VideoNode.prototype.constructor = Nightbird.VideoNode;
 
-Nightbird.VideoNode.prototype.loadVideo = function( _file ){
+Nightbird.VideoNode.prototype.loadVideo = function( _ab ){
 
 	var it = this;
 
-	var reader = new FileReader();
-	reader.onload = function(){
-		it.video.src = reader.result;
-	};
-
-	reader.readAsDataURL( _file );
+	var video = new Blob( [ _ab ] );
+	it.video.src = window.URL.createObjectURL( video );
 
 };
 
-Nightbird.VideoNode.prototype.save = function(){
+Nightbird.VideoNode.prototype.remove = function(){
 
 	var it = this;
 
-	var obj = Nightbird.Node.prototype.save.call( it );
+	window.URL.revokeObjectURL( it.video.src );
+	Nightbird.Node.prototype.remove.call( it );
+
+};
+
+Nightbird.VideoNode.prototype.save = function( _hashed ){
+
+	var it = this;
+
+	var obj = Nightbird.Node.prototype.save.call( it, _hashed );
 	obj.kind = 'VideoNode';
-	obj.src = it.src;
 	return obj;
 
 };

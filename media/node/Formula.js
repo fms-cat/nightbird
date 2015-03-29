@@ -114,6 +114,26 @@ Node.prototype.operateUp = function(){
 
 };
 
+Node.prototype.save = function( _hashed ){
+
+	var it = this;
+
+	var obj = Nightbird.Node.prototype.save.call( it, _hashed );
+	obj.str = it.str;
+	return obj;
+
+};
+
+Node.prototype.load = function( _obj ){
+
+	var it = this;
+
+	Nightbird.Node.prototype.load.call( it, _obj );
+
+	it.func = it.interpret( it.str );
+
+};
+
 Node.prototype.draw = function(){
 
 	var it = this;

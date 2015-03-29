@@ -5,6 +5,7 @@ Nightbird.MasterNode = function( _nightbird ){
 	Nightbird.Node.call( it, _nightbird );
 
 	it.name = 'Master';
+	it.isMasterNode = true;
 	it.width = 160;
 	it.height = 10+160*it.nightbird.height/it.nightbird.width;
 
@@ -29,17 +30,8 @@ Nightbird.MasterNode = function( _nightbird ){
 		var contextMenu = new Nightbird.ContextMenu( it.nightbird );
 		contextMenu.setName( 'Open window' );
 		contextMenu.onClick = function(){
-			var subWindow = window.open( 'about:blank', 'sub', 'width='+nightbird.width+',height='+nightbird.height+',menubar=no' );
-			subWindow.document.body.style.padding = 0;
-			subWindow.document.body.style.margin = 0;
-			subWindow.document.body.style.overflow = 'hidden';
-
-			subWindow.document.body.appendChild( nightbird.master.canvas );
-			subWindow.onresize = function(){
-				nightbird.master.canvas.style.width = subWindow.innerWidth;
-				nightbird.master.canvas.style.height = subWindow.innerHeight;
-			};
-		};
+			it.openWindow();
+		}
 		return contextMenu;
 	} );
 
@@ -48,21 +40,29 @@ Nightbird.MasterNode = function( _nightbird ){
 Nightbird.MasterNode.prototype = Object.create( Nightbird.Node.prototype );
 Nightbird.MasterNode.prototype.constructor = Nightbird.MasterNode;
 
+Nightbird.MasterNode.prototype.openWindow = function(){
+
+	var it = this;
+
+	it.window = window.open( 'about:blank', 'master', 'width='+it.nightbird.width+',height='+it.nightbird.height+',menubar=no' );
+
+	it.window.document.body.style.padding = 0;
+	it.window.document.body.style.margin = 0;
+	it.window.document.body.style.overflow = 'hidden';
+
+	it.window.document.body.appendChild( it.canvas );
+	it.window.onresize = function(){
+		it.canvas.style.width = it.window.innerWidth;
+		it.canvas.style.height = it.window.innerHeight;
+	};
+
+};
+
 Nightbird.MasterNode.prototype.remove = function(){
 
 	var it = this;
 
 	it.disconnect();
-
-};
-
-Nightbird.MasterNode.prototype.save = function(){
-
-	var it = this;
-
-	var obj = Nightbird.Node.prototype.save.call( it );
-	obj.kind = 'MasterNode';
-	return obj;
 
 };
 
