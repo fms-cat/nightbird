@@ -4,3 +4,17 @@ Nightbird.dist = function( _x1, _y1, _x2, _y2 ){
 
 Nightbird.black1x1 = new Image();
 Nightbird.black1x1.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAAAAACwAAAAAAQABAAACAkQBADs=';
+
+Nightbird.array2str = function( _array ){
+  // http://stackoverflow.com/questions/6965107/converting-between-strings-and-arraybuffers
+  var decoder = new TextDecoder( 'utf-8' );
+  var str = decoder.decode( _array );
+  return str;
+};
+
+Nightbird.str2array = function( _str ){
+  // http://stackoverflow.com/questions/6965107/converting-between-strings-and-arraybuffers
+  var encoder = new TextEncoder( 'utf-8' );
+  var array = encoder.encode( _str );
+  return array;
+};

@@ -660,73 +660,67 @@ Nightbird.prototype.loadFiles = function( _files ){
 
 	var it = this;
 
-	for( var i=0, file; file=_files[i]; i++ ){
+	var i = 0;
+	var imax = _files.length;
 
-		var ext = '';
-		if( /\.([^.]+)$/.test( file.name ) ){
-			ext = /\.([^.]+)$/.exec( file.name )[1];
-			ext = ext.toLowerCase();
-		}else{
-			console.error( file.name+' has no extension' );
-			continue;
-		}
+	step();
 
-		if( ext == 'glsl' ){
+	function step(){
 
-			var node = new Nightbird.ShaderNode( it, file );
-			node.file = file;
-			it.nodes.push( node );
-			node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
+		var file = _files[i];
 
-		}else if( ext == 'jpg' || ext == 'jpeg' || ext == 'png' ){
+		var reader = new FileReader();
+		reader.onload = function(){
 
-			var node = new Nightbird.ImageNode( it, file );
-			node.file = file;
-			it.nodes.push( node );
-			node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
+			var ab = reader.result;
+			var node = null;
 
-		}else if( ext == 'mp4' || ext == 'webm' ){
+			var ext = '';
+			if( /\.([^.]+)$/.test( file.name ) ){
+				ext = /\.([^.]+)$/.exec( file.name )[1];
+				ext = ext.toLowerCase();
 
-			var node = new Nightbird.VideoNode( it, file );
-			node.file = file;
-			it.nodes.push( node );
-			node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
-
-		}else if( ext == 'gif' ){
-
-			var node = new Nightbird.GifNode( it, file );
-			node.file = file;
-			it.nodes.push( node );
-			node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
-
-		}else if( ext == 'js' ){
-
-			var reader = new FileReader();
-			reader.file = file;
-			reader.onload = function(){
-				try{
-					eval( reader.result );
-				}catch( _e ){
-					console.error( _e.message );
+				if( ext == 'glsl' ){
+					node = new Nightbird.ShaderNode( it, ab );
+				}else if( ext == 'jpg' || ext == 'jpeg' || ext == 'png' ){
+					node = new Nightbird.ImageNode( it, ab );
+				}else if( ext == 'mp4' || ext == 'webm' ){
+					node = new Nightbird.VideoNode( it, ab );
+				}else if( ext == 'gif' ){
+					node = new Nightbird.GifNode( it, ab );
+				}else if( ext == 'js' ){
+					try{
+						var array = new Uint8Array( ab );
+						eval( Nightbird.array2str( array ) );
+						if( Node ){
+							node = new Node( it );
+						}
+					}catch( _e ){
+						console.error( _e.message );
+					}
+				}else if( ext == 'nightbird' ){
+					it.load( ab );
+				}else{
+					console.error( file.name+' is unsupported extension' );
 				}
-				if( Node ){
-					var node = new Node( it );
-					node.file = reader.file;
-					it.nodes.push( node );
-					node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
-				}
+			}else{
+				console.error( file.name+' has no extension' );
 			}
-			reader.readAsText( file );
 
-		}else if( ext == 'json' ){
+			if( node ){
+				node.ab = ab;
+				if( !node.name ){ node.name = file.name }
+				it.nodes.push( node );
+				node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
+			}
 
-			it.load( file );
-
-		}else{
-
-			console.error( file.name+' is unsupported extension' );
+			i ++;
+			if( i < imax ){
+				step();
+			}
 
 		}
+		reader.readAsArrayBuffer( file );
 
 	}
 
@@ -755,153 +749,152 @@ Nightbird.prototype.save = function( _nodes ){
 	var it = this;
 
 	var nodes = _nodes;
+	var abLength = 0;
 
 	var objs = {};
 	objs.nodes = [];
 	var done = 0;
 	for( var i=0; i<nodes.length; i++ ){
-		objs.nodes.push( nodes[i].save( function(){
-			done ++;
-			if( nodes.length == done ){
-				saveRest();
-			}
-		} ) );
+		objs.nodes.push( nodes[i].save() );
+		abLength += 4+nodes[i].ab.byteLength;
 	}
 
-	function saveRest(){
-		objs.links = [];
+	objs.links = [];
 
-		for( var i=0; i<it.links.length; i++ ){
-			var link = it.links[i];
-			var startNode = nodes.indexOf( link.start.node );
-			var endNode = nodes.indexOf( link.end.node );
-			if( startNode != -1 && endNode != -1 ){
-				var linkData = {};
-				linkData.startNode = startNode;
-				linkData.startConnector = nodes[startNode].outputs.indexOf( link.start );
-				linkData.endNode = endNode;
-				linkData.endConnector = nodes[endNode].inputs.indexOf( link.end );
-				objs.links.push( linkData );
-			}
+	for( var i=0; i<it.links.length; i++ ){
+		var link = it.links[i];
+		var startNode = nodes.indexOf( link.start.node );
+		var endNode = nodes.indexOf( link.end.node );
+		if( startNode != -1 && endNode != -1 ){
+			var linkData = {};
+			linkData.startNode = startNode;
+			linkData.startConnector = nodes[startNode].outputs.indexOf( link.start );
+			linkData.endNode = endNode;
+			linkData.endConnector = nodes[endNode].inputs.indexOf( link.end );
+			objs.links.push( linkData );
 		}
-
-		var json = JSON.stringify( objs );
-
-		var a = document.createElement( 'a' );
-		var blob = new Blob( [ json ], { type : 'application/json' } );
-		var url = URL.createObjectURL( blob );
-		a.href = url;
-		a.download = 'nightbird.json';
-		a.click();
-		URL.revokeObjectURL( url );
 	}
+
+	var json = JSON.stringify( objs );
+	var jsonArray = Nightbird.str2array( json );
+	abLength += 4+jsonArray.length;
+
+	var ab = new ArrayBuffer( abLength );
+	var array = new Uint8Array( ab );
+	var offset = 0;
+	set32( jsonArray.length, offset ); offset += 4;
+	array.set( jsonArray, offset ); offset += jsonArray.length;
+	for( var i=0; i<nodes.length; i++ ){
+		set32( nodes[i].ab.byteLength, offset ); offset += 4;
+		var nodeArray = new Uint8Array( nodes[i].ab );
+		array.set( nodeArray, offset ); offset += nodes[i].ab.byteLength;
+	}
+
+	function set32( _value, _offset ){
+		array[ _offset ] = (_value)&255;
+		array[ _offset+1 ] = (_value>>>8)&255;
+		array[ _offset+2 ] = (_value>>>16)&255;
+		array[ _offset+3 ] = (_value>>>24)&255;
+	}
+
+	var a = document.createElement( 'a' );
+	var blob = new Blob( [ ab ], { type : 'application/nightbird' } );
+	var url = URL.createObjectURL( blob );
+	a.href = url;
+	a.download = 'nightbird.nightbird';
+	a.click();
+	URL.revokeObjectURL( url );
 
 };
 
-Nightbird.prototype.load = function( _file ){
+Nightbird.prototype.load = function( _ab ){
 
 	var it = this;
 
-	var reader = new FileReader();
-	reader.onload = function(){
-		var objs = JSON.parse( reader.result );
-		var beginIndex = it.nodes.length;
+	var ab = _ab;
+	var array = new Uint8Array( ab );
+	var offset = 0;
+	var jsonLength = get32( offset ); offset += 4;
+	var json = Nightbird.array2str( array.subarray( offset, offset+jsonLength ) ); offset += jsonLength;
+	var objs = JSON.parse( json );
 
-		var nodeCount = objs.nodes.length;
-		var nodeDone = -1;
+	var beginIndex = it.nodes.length;
+	var i = 0;
+	var imax = objs.nodes.length;
 
-		step();
+	step();
 
-		function step(){
+	function step(){
 
-			nodeDone ++;
+		var nodeData = objs.nodes[i];
+		var nodeLength = get32( offset ); offset += 4;
+		var nodeAb = new ArrayBuffer( nodeLength );
+		var nodeArray = new Uint8Array( nodeAb );
+		nodeArray.set( array.subarray( offset, offset+nodeLength ) ); offset += nodeLength;
+		var node = null;
 
-			if( nodeCount != nodeDone ){
-
-				var nodeData = objs.nodes[nodeDone];
-
-				( function( nodeData ){
-
-					it.fileguy.load( nodeData.hash, function( _file ){
-
-						if( nodeData.kind == 'ShaderNode' ){
-							var node = new Nightbird.ShaderNode( it, _file );
-							node.load( nodeData );
-							node.file = _file;
-							it.nodes.push( node );
-							step();
-						}
-
-						if( nodeData.kind == 'GifNode' ){
-							var node = new Nightbird.GifNode( it, _file );
-							node.load( nodeData );
-							node.file = _file;
-							it.nodes.push( node );
-							step();
-						}
-
-						if( nodeData.kind == 'ImageNode' ){
-							var node = new Nightbird.ImageNode( it, _file );
-							node.load( nodeData );
-							node.file = _file;
-							it.nodes.push( node );
-							step();
-						}
-
-						if( nodeData.kind == 'VideoNode' ){
-							var node = new Nightbird.VideoNode( it, _file );
-							node.load( nodeData );
-							node.file = _file;
-							it.nodes.push( node );
-							step();
-						}
-
-						if( nodeData.kind == 'Node' ){
-							var reader = new FileReader();
-							reader.onload = function(){
-								try{
-									eval( reader.result );
-								}catch( _e ){
-									console.error( _e.message );
-								}
-								if( Node ){
-									var node = new Node( it );
-									node.load( nodeData );
-									node.file = _file;
-									it.nodes.push( node );
-									step();
-								}
-							};
-							reader.readAsText( _file );
-						}
-
-					} );
-
-				}( nodeData ) );
-
-			}else{
-
-				for( var i=0; i<objs.links.length; i++ ){
-
-					var linkData = objs.links[i];
-
-					var startConnector = it.nodes[ beginIndex+linkData.startNode ].outputs[ linkData.startConnector ];
-					var endConnector = it.nodes[ beginIndex+linkData.endNode ].inputs[ linkData.endConnector ];
-
-					var link = new Nightbird.Link( it, startConnector );
-					it.links.push( link );
-					link.end = endConnector;
-					startConnector.setLink( link );
-					endConnector.setLink( link );
-					link.grabEnd = false;
-
+		if( nodeData.kind == 'ShaderNode' ){
+			node = new Nightbird.ShaderNode( it, nodeAb );
+		}else if( nodeData.kind == 'GifNode' ){
+			var node = new Nightbird.GifNode( it, nodeAb );
+		}else if( nodeData.kind == 'ImageNode' ){
+			var node = new Nightbird.ImageNode( it, nodeAb );
+		}else if( nodeData.kind == 'VideoNode' ){
+			var node = new Nightbird.VideoNode( it, nodeAb );
+		}else if( nodeData.kind == 'Node' ){
+			try{
+				eval( Nightbird.array2str( nodeArray ) );
+				if( Node ){
+					node = new Node( it );
 				}
-
+			}catch( _e ){
+				console.error( _e.message );
 			}
+		}
+
+		if( node ){
+			node.ab = nodeAb;
+			node.load( nodeData );
+			it.nodes.push( node );
+		}
+
+		i ++;
+		if( i < imax ){
+			step();
+		}else{
+			connectLink();
+		}
+
+	}
+
+	function connectLink(){
+
+		for( var i=0; i<objs.links.length; i++ ){
+
+			var linkData = objs.links[i];
+
+			var startConnector = it.nodes[ beginIndex+linkData.startNode ].outputs[ linkData.startConnector ];
+			var endConnector = it.nodes[ beginIndex+linkData.endNode ].inputs[ linkData.endConnector ];
+
+			var link = new Nightbird.Link( it, startConnector );
+			it.links.push( link );
+			link.end = endConnector;
+			startConnector.setLink( link );
+			endConnector.setLink( link );
+			link.grabEnd = false;
 
 		}
+
 	}
-	reader.readAsText( _file );
+
+	function get32( _offset ){
+		var ret = 0;
+		ret += array[ _offset ];
+		ret += array[ _offset+1 ]<<8;
+		ret += array[ _offset+2 ]<<16;
+		ret += array[ _offset+3 ]<<24;
+		return ret;
+	};
 
 };
 

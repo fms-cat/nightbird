@@ -1,9 +1,8 @@
-Nightbird.ImageNode = function( _nightbird, _file ){
+Nightbird.ImageNode = function( _nightbird, _ab ){
 
 	var it = this;
 
 	Nightbird.Node.call( it, _nightbird );
-	it.name = _file.name;
 	it.width = 100;
 	it.height = 10+100*it.nightbird.height/it.nightbird.width;
 
@@ -14,9 +13,8 @@ Nightbird.ImageNode = function( _nightbird, _file ){
 	it.context = it.canvas.getContext( '2d' );
 
 	it.image = new Image();
-	it.imageLoaded = false;
 
-	it.loadImage( _file );
+	it.loadImage( _ab );
 
 	var outputCanvas = new Nightbird.Connector( it, true, 'canvas' );
 	outputCanvas.setName( 'output' );
@@ -31,17 +29,21 @@ Nightbird.ImageNode = function( _nightbird, _file ){
 Nightbird.ImageNode.prototype = Object.create( Nightbird.Node.prototype );
 Nightbird.ImageNode.prototype.constructor = Nightbird.ImageNode;
 
-Nightbird.ImageNode.prototype.loadImage = function( _file ){
+Nightbird.ImageNode.prototype.loadImage = function( _ab ){
 
 	var it = this;
 
-	var reader = new FileReader();
-	reader.onload = function(){
-		it.image.src = reader.result;
-		it.imageLoaded = true;
-	};
+	var image = new Blob( [ _ab ] );
+	it.image.src = window.URL.createObjectURL( image );
 
-	reader.readAsDataURL( _file );
+};
+
+Nightbird.ImageNode.prototype.remove = function(){
+
+	var it = this;
+
+	window.URL.revokeObjectURL( it.image.src );
+	Nightbird.Node.prototype.remove.call( it );
 
 };
 
@@ -61,20 +63,18 @@ Nightbird.ImageNode.prototype.draw = function(){
 
 	if( it.active ){
 
-		if( it.imageLoaded ){
-			var x = 0;
-			var y = 0;
-			var w = it.image.width;
-			var h = it.image.height;
-			if( w/it.canvas.width < h/it.canvas.height ){
-				y = (h-(w*it.canvas.height/it.canvas.width))/2;
-				h = w*it.canvas.height/it.canvas.width;
-			}else{
-				x = (w-(h*it.canvas.width/it.canvas.height))/2;
-				w = h*it.canvas.width/it.canvas.height;
-			}
-			it.context.drawImage( it.image, x, y, w, h, 0, 0, it.canvas.width, it.canvas.height );
+		var x = 0;
+		var y = 0;
+		var w = it.image.width;
+		var h = it.image.height;
+		if( w/it.canvas.width < h/it.canvas.height ){
+			y = (h-(w*it.canvas.height/it.canvas.width))/2;
+			h = w*it.canvas.height/it.canvas.width;
+		}else{
+			x = (w-(h*it.canvas.width/it.canvas.height))/2;
+			w = h*it.canvas.width/it.canvas.height;
 		}
+		it.context.drawImage( it.image, x, y, w, h, 0, 0, it.canvas.width, it.canvas.height );
 
 	}
 

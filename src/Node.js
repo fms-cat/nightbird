@@ -5,7 +5,7 @@ Nightbird.Node = function( _nightbird ){
 	it.nightbird = _nightbird;
 
 	it.active = true;
-	it.name = 'Node';
+	it.name = '';
 	it.nameColor = '#ddd';
 
 	it.posX = 32;
@@ -66,7 +66,7 @@ Nightbird.Node.prototype.move = function( _x, _y ){
 
 };
 
-Nightbird.Node.prototype.save = function( _hashed ){
+Nightbird.Node.prototype.save = function(){
 
 	var it = this;
 
@@ -77,10 +77,6 @@ Nightbird.Node.prototype.save = function( _hashed ){
 	obj.posX = it.posX;
 	obj.posY = it.posY;
 	obj.active = it.active;
-	it.nightbird.fileguy.save( it.file, function( _hash ){
-		obj.hash = _hash;
-		_hashed();
-	} );
 
 	return obj;
 
