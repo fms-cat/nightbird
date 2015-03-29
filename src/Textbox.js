@@ -8,7 +8,6 @@ Nightbird.Textbox = function( _nightbird, _default, _onEnter ){
 	it.posX = it.nightbird.mouseX;
 	it.posY = it.nightbird.mouseY;
 	it.width = 80;
-	it.height = 12;
 
 	it.input = document.createElement( 'input' );
 	it.input.value = _default;
@@ -21,7 +20,6 @@ Nightbird.Textbox = function( _nightbird, _default, _onEnter ){
 	it.input.style.left = it.posX+'px';
 	it.input.style.top = it.posY+'px';
 	it.input.style.width = it.width+'px';
-	it.input.style.height = it.height+'px';
 	it.input.addEventListener( 'keydown', function( _e ){
 
 		var k = _e.keyCode;

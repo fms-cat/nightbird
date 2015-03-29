@@ -36,19 +36,10 @@ var Nightbird = function( _w, _h ){
 	it.modular.height = 512;
 	it.modularContext = it.modular.getContext( '2d' );
 
-	var subWindow = window.open( 'about:blank', 'sub', 'width='+it.width+',height='+it.height+',menubar=no' );
-	subWindow.document.body.style.padding = 0;
-	subWindow.document.body.style.margin = 0;
-	subWindow.document.body.style.overflow = 'hidden';
-
 	it.master = new Nightbird.MasterNode( it );
 	it.nodes.push( it.master );
 	it.master.move( 256, 256 );
-	subWindow.document.body.appendChild( it.master.canvas );
-	subWindow.onresize = function(){
-		it.master.canvas.style.width = subWindow.innerWidth;
-		it.master.canvas.style.height = subWindow.innerHeight;
-	};
+	it.master.openWindow();
 
 	document.body.appendChild( it.modular );
 
@@ -182,6 +173,7 @@ Nightbird.prototype.mousedown1 = function( _e ){
 		for( var ic=0; ic<node.inputs.length; ic++ ){
 			var connector = node.inputs[ic];
 			if( Nightbird.dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
+				it.targets = []; // 複数選択は解除
 				var link = new Nightbird.Link( it, connector );
 				it.links.push( link );
 				it.grabLinks.push( link );
@@ -194,6 +186,7 @@ Nightbird.prototype.mousedown1 = function( _e ){
 		for( var ic=0; ic<node.outputs.length; ic++ ){
 			var connector = node.outputs[ic];
 			if( Nightbird.dist( connector.posX, connector.posY, it.mouseX, it.mouseY ) < connector.radius ){
+				it.targets = []; // 複数選択は解除
 				var link = new Nightbird.Link( it, connector );
 				it.links.push( link );
 				it.grabLinks.push( link );
@@ -438,7 +431,6 @@ Nightbird.prototype.mouseup3 = function( _e ){
 				var link = links[i];
 				it.links.splice( it.links.indexOf( link ), 1 );
 			}
-			it.grabLinks = [];
 			it.movingLinks = [];
 
 		}
@@ -461,6 +453,20 @@ Nightbird.prototype.mouseup3 = function( _e ){
 				}else{
 					var multipleContextMenus = [];
 
+					multipleContextMenus.push( function(){
+						var contextMenu = new Nightbird.ContextMenu( it );
+						contextMenu.setName( 'Save selected' );
+						contextMenu.onClick = function(){
+							var nodes = [];
+							for( var i=0, node; node=it.targets[i]; i++ ){
+								if( !node.isMasterNode ){
+									nodes.push( node );
+								}
+							}
+							it.save( nodes );
+						};
+						return contextMenu;
+					} );
 					multipleContextMenus.push( function(){
 						var contextMenu = new Nightbird.ContextMenu( it );
 						contextMenu.setName( 'Activate selected' );
@@ -618,11 +624,7 @@ Nightbird.prototype.keydown = function( _e ){
 	if( document.activeElement != document.body ){ return; }
 
 	if( 0 < it.contextMenus.length ){
-		if( k == 27 ){
-			_e.preventDefault();
-			it.selectContextMenu = null;
-			it.contextMenus = [];
-		}else if( k == 13 ){
+		if( k == 13 ){
 			_e.preventDefault();
 			if( it.selectContextMenu ){
 				it.selectContextMenu.onClick();
@@ -644,10 +646,12 @@ Nightbird.prototype.keydown = function( _e ){
 		}
 	}
 
-	if( k == 32 ){
-		_e.preventDefault();
-		it.selectContextMenu = null;
-		it.contextMenus = [];
+	if( _e.ctrlKey || _e.metaKey ){
+		if( k == 65 ){
+			for( var node of it.nodes ){
+				it.targets.push( node );
+			}
+		}
 	}
 
 };
@@ -670,30 +674,35 @@ Nightbird.prototype.loadFiles = function( _files ){
 		if( ext == 'glsl' ){
 
 			var node = new Nightbird.ShaderNode( it, file );
+			node.file = file;
 			it.nodes.push( node );
 			node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
 
 		}else if( ext == 'jpg' || ext == 'jpeg' || ext == 'png' ){
 
 			var node = new Nightbird.ImageNode( it, file );
+			node.file = file;
 			it.nodes.push( node );
 			node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
 
 		}else if( ext == 'mp4' || ext == 'webm' ){
 
 			var node = new Nightbird.VideoNode( it, file );
+			node.file = file;
 			it.nodes.push( node );
 			node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
 
 		}else if( ext == 'gif' ){
 
 			var node = new Nightbird.GifNode( it, file );
+			node.file = file;
 			it.nodes.push( node );
 			node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
 
 		}else if( ext == 'js' ){
 
 			var reader = new FileReader();
+			reader.file = file;
 			reader.onload = function(){
 				try{
 					eval( reader.result );
@@ -702,11 +711,16 @@ Nightbird.prototype.loadFiles = function( _files ){
 				}
 				if( Node ){
 					var node = new Node( it );
+					node.file = reader.file;
 					it.nodes.push( node );
 					node.move( it.mouseX-node.width/2+(i%8)*10, it.mouseY-node.height/2+(i%8)*10 );
 				}
 			}
 			reader.readAsText( file );
+
+		}else if( ext == 'json' ){
+
+			it.load( file );
 
 		}else{
 
@@ -736,37 +750,158 @@ Nightbird.prototype.setModularSize = function( _w, _h ){
 
 };
 
-Nightbird.prototype.save = function(){
+Nightbird.prototype.save = function( _nodes ){
 
 	var it = this;
 
-	var json = '';
-	for( var i=0; i<it.targets.length; i++ ){
-		json += JSON.stringify( it.targets[i].save() );
+	var nodes = _nodes;
+
+	var objs = {};
+	objs.nodes = [];
+	var done = 0;
+	for( var i=0; i<nodes.length; i++ ){
+		objs.nodes.push( nodes[i].save( function(){
+			done ++;
+			if( nodes.length == done ){
+				saveRest();
+			}
+		} ) );
 	}
 
-	for( var i=0; i<it.links.length; i++ ){
-		var link = it.links[i];
-		var startNode = it.targets.indexOf( link.start.node );
-		var endNode = it.targets.indexOf( link.end.node );
-		if( startNode != -1 && endNode != -1 ){
-			var obj = {};
-			obj.kind = 'Link';
-			obj.startNode = startNode;
-			obj.startConnector = it.targets[startNode].outputs.indexOf( link.start );
-			obj.endNode = endNode;
-			obj.endConnector = it.targets[endNode].inputs.indexOf( link.end );
-			json += JSON.stringify( obj );
+	function saveRest(){
+		objs.links = [];
+
+		for( var i=0; i<it.links.length; i++ ){
+			var link = it.links[i];
+			var startNode = nodes.indexOf( link.start.node );
+			var endNode = nodes.indexOf( link.end.node );
+			if( startNode != -1 && endNode != -1 ){
+				var linkData = {};
+				linkData.startNode = startNode;
+				linkData.startConnector = nodes[startNode].outputs.indexOf( link.start );
+				linkData.endNode = endNode;
+				linkData.endConnector = nodes[endNode].inputs.indexOf( link.end );
+				objs.links.push( linkData );
+			}
+		}
+
+		var json = JSON.stringify( objs );
+
+		var a = document.createElement( 'a' );
+		var blob = new Blob( [ json ], { type : 'application/json' } );
+		var url = URL.createObjectURL( blob );
+		a.href = url;
+		a.download = 'nightbird.json';
+		a.click();
+		URL.revokeObjectURL( url );
+	}
+
+};
+
+Nightbird.prototype.load = function( _file ){
+
+	var it = this;
+
+	var reader = new FileReader();
+	reader.onload = function(){
+		var objs = JSON.parse( reader.result );
+		var beginIndex = it.nodes.length;
+
+		var nodeCount = objs.nodes.length;
+		var nodeDone = -1;
+
+		step();
+
+		function step(){
+
+			nodeDone ++;
+
+			if( nodeCount != nodeDone ){
+
+				var nodeData = objs.nodes[nodeDone];
+
+				( function( nodeData ){
+
+					it.fileguy.load( nodeData.hash, function( _file ){
+
+						if( nodeData.kind == 'ShaderNode' ){
+							var node = new Nightbird.ShaderNode( it, _file );
+							node.load( nodeData );
+							node.file = _file;
+							it.nodes.push( node );
+							step();
+						}
+
+						if( nodeData.kind == 'GifNode' ){
+							var node = new Nightbird.GifNode( it, _file );
+							node.load( nodeData );
+							node.file = _file;
+							it.nodes.push( node );
+							step();
+						}
+
+						if( nodeData.kind == 'ImageNode' ){
+							var node = new Nightbird.ImageNode( it, _file );
+							node.load( nodeData );
+							node.file = _file;
+							it.nodes.push( node );
+							step();
+						}
+
+						if( nodeData.kind == 'VideoNode' ){
+							var node = new Nightbird.VideoNode( it, _file );
+							node.load( nodeData );
+							node.file = _file;
+							it.nodes.push( node );
+							step();
+						}
+
+						if( nodeData.kind == 'Node' ){
+							var reader = new FileReader();
+							reader.onload = function(){
+								try{
+									eval( reader.result );
+								}catch( _e ){
+									console.error( _e.message );
+								}
+								if( Node ){
+									var node = new Node( it );
+									node.load( nodeData );
+									node.file = _file;
+									it.nodes.push( node );
+									step();
+								}
+							};
+							reader.readAsText( _file );
+						}
+
+					} );
+
+				}( nodeData ) );
+
+			}else{
+
+				for( var i=0; i<objs.links.length; i++ ){
+
+					var linkData = objs.links[i];
+
+					var startConnector = it.nodes[ beginIndex+linkData.startNode ].outputs[ linkData.startConnector ];
+					var endConnector = it.nodes[ beginIndex+linkData.endNode ].inputs[ linkData.endConnector ];
+
+					var link = new Nightbird.Link( it, startConnector );
+					it.links.push( link );
+					link.end = endConnector;
+					startConnector.setLink( link );
+					endConnector.setLink( link );
+					link.grabEnd = false;
+
+				}
+
+			}
+
 		}
 	}
-
-	var a = document.createElement( 'a' );
-	var blob = new Blob( [ json ], { type : 'application/json' } );
-	var url = URL.createObjectURL( blob );
-	a.href = url;
-	a.download = 'nightbird.txt';
-	a.click();
-	URL.revokeObjectURL( url );
+	reader.readAsText( _file );
 
 };
 
@@ -789,10 +924,9 @@ Nightbird.prototype.draw = function(){
 
 	for( var node of it.nodes ){
 		node.draw();
-	}
-
-	for( var node of it.targets ){
-		node.drawTarget();
+		if( it.targets.indexOf( node ) != -1 ){
+			node.drawTarget();
+		}
 	}
 
 	if( it.multipleRect ){

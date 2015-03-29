@@ -4,7 +4,6 @@ Nightbird.ImageNode = function( _nightbird, _file ){
 
 	Nightbird.Node.call( it, _nightbird );
 	it.name = _file.name;
-	it.src = _file.name;
 	it.width = 100;
 	it.height = 10+100*it.nightbird.height/it.nightbird.width;
 
@@ -46,13 +45,12 @@ Nightbird.ImageNode.prototype.loadImage = function( _file ){
 
 };
 
-Nightbird.ImageNode.prototype.save = function(){
+Nightbird.ImageNode.prototype.save = function( _hashed ){
 
 	var it = this;
 
-	var obj = Nightbird.Node.prototype.save.call( it );
+	var obj = Nightbird.Node.prototype.save.call( it, _hashed );
 	obj.kind = 'ImageNode';
-	obj.src = it.src;
 	return obj;
 
 };

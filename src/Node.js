@@ -66,30 +66,34 @@ Nightbird.Node.prototype.move = function( _x, _y ){
 
 };
 
-Nightbird.Node.prototype.save = function(){
+Nightbird.Node.prototype.save = function( _hashed ){
 
 	var it = this;
 
 	var obj = {};
 
 	obj.kind = 'Node';
+	obj.name = it.name;
 	obj.posX = it.posX;
 	obj.posY = it.posY;
 	obj.active = it.active;
+	it.nightbird.fileguy.save( it.file, function( _hash ){
+		obj.hash = _hash;
+		_hashed();
+	} );
 
 	return obj;
 
 };
 
-Nightbird.Node.prototype.load = function( _str ){
+Nightbird.Node.prototype.load = function( _obj ){
 
 	var it = this;
 
-	var obj = JSON.parse( _str );
-
-	for( var key in obj ){
-		it[key] = obj[key];
+	for( var key in _obj ){
+		it[key] = _obj[key];
 	}
+	it.move();
 
 };
 

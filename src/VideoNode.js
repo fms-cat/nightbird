@@ -4,7 +4,6 @@ Nightbird.VideoNode = function( _nightbird, _file ){
 
 	Nightbird.Node.call( it, _nightbird );
 	it.name = _file.name;
-	it.src = _file.name;
 	it.width = 100;
 	it.height = 10+100*it.nightbird.height/it.nightbird.width;
 
@@ -47,13 +46,12 @@ Nightbird.VideoNode.prototype.loadVideo = function( _file ){
 
 };
 
-Nightbird.VideoNode.prototype.save = function(){
+Nightbird.VideoNode.prototype.save = function( _hashed ){
 
 	var it = this;
 
-	var obj = Nightbird.Node.prototype.save.call( it );
+	var obj = Nightbird.Node.prototype.save.call( it, _hashed );
 	obj.kind = 'VideoNode';
-	obj.src = it.src;
 	return obj;
 
 };
