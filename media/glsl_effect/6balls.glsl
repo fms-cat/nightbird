@@ -6,7 +6,6 @@ uniform vec2 resolution;
 uniform float time;
 uniform float param0;
 uniform sampler2D texture0;
-uniform sampler2D texture1;
 
 #define t time
 #define r resolution
@@ -57,13 +56,12 @@ void main()
     rP = v.xxy+ray*rL;
   }
 
-  vec3 col;
+  vec4 col = v.xxxx;
   if( rD < 1E-2 )
   {
     vec2 texp = vec2( .5+n(rP).xy/r*min( r.x, r.y )*.5 );
-    col = texture2D( texture0, vec2( texp.x, 1.-texp.y ) ).xyz * ( .1/rL*n(rP).z+.9 );
-  }else{
-    col = texture2D( texture1, vec2( uv.x, 1.-uv.y ) ).xyz;
+    col.xyz = texture2D( texture0, vec2( texp.x, 1.-texp.y ) ).xyz * ( .1/rL*n(rP).z+.9 );
+    col.w = 1.;
   }
-  gl_FragColor = vec4( col, 1. );
+  gl_FragColor = col;
 }
