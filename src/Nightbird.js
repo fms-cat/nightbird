@@ -906,7 +906,7 @@ Nightbird.prototype.draw = function(){
 
 	it.modularContext.fillStyle = '#222';
 	it.modularContext.fillRect( 0, 0, it.modular.width, it.modular.height );
-	it.modularContext.font = '10px Wt-Position';
+	it.modularContext.font = '10px WtPosition';
 
 	for( var link of it.links ){
 		link.draw();
