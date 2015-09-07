@@ -44,17 +44,22 @@ Nightbird.MasterNode.prototype.openWindow = function(){
 
 	var it = this;
 
-	it.window = window.open( 'about:blank', 'master', 'width='+it.nightbird.width+',height='+it.nightbird.height+',menubar=no' );
+	if( !it.window || !it.window.window ){
+		it.window = window.open( '../master.html', 'master', 'width='+it.nightbird.width+',height='+it.nightbird.height+',menubar=no' );
 
-	it.window.document.body.style.padding = 0;
-	it.window.document.body.style.margin = 0;
-	it.window.document.body.style.overflow = 'hidden';
+		it.window.onload = function(){
+			it.window.canvas = it.window.document.createElement( 'canvas' );
+			it.window.canvas.width = it.nightbird.width;
+			it.window.canvas.height = it.nightbird.height;
+			it.window.canvas.context = it.window.canvas.getContext( '2d' );
+			it.window.document.body.appendChild( it.window.canvas );
 
-	it.window.document.body.appendChild( it.canvas );
-	it.window.onresize = function(){
-		it.canvas.style.width = it.window.innerWidth;
-		it.canvas.style.height = it.window.innerHeight;
-	};
+			it.window.addEventListener( 'resize', function( _e ){
+				it.window.canvas.style.width = it.window.innerWidth + 'px';
+				it.window.canvas.style.height = it.window.innerHeight + 'px';
+			} );
+		};
+	}
 
 };
 
@@ -75,6 +80,10 @@ Nightbird.MasterNode.prototype.draw = function(){
 		it.context.fillRect( 0, 0, it.canvas.width, it.canvas.height );
 		if( it.input ){
 			it.context.drawImage( it.input, 0, 0, it.canvas.width, it.canvas.height );
+
+			if( it.window.canvas ){
+				it.window.canvas.context.drawImage( it.input, 0, 0, it.window.canvas.width, it.window.canvas.height );
+			}
 		}
 	}
 

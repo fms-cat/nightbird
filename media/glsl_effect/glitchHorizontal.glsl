@@ -7,7 +7,7 @@ uniform float time;
 uniform sampler2D texture0;
 uniform float param0;
 
-#define t mod(time,60.)
+#define t mod(time,1.)
 #define r resolution
 #define c gl_FragCoord.xy
 
@@ -19,9 +19,9 @@ float noise( float _i )
 void main()
 {
 	vec2 uv = c/r;
-	float my = c.y*5.+t*10.;
+	float my = c.y*5. + t*10.;
 	float mo = noise( floor( ( my+( 2.+sin( my*.1 ) )*noise( t )*20. )*.07 + noise( floor( my*1.1 ) ) ) );
-	float amp = param0 * ( 1.+40.*pow( uv.y*2.-1., 120. ) );
+	float amp = 0.03 * ( 1.+40.*pow( abs( uv.y*2.-1. ), 120. ) );
 	vec3 p = vec3(
 		fract( uv.x+( .4*sin( mo*182.43+floor(t*3.)/3.*.1 ) )*amp ),
 		fract( uv.x+( .4*sin( mo*182.43+floor(t*3.)/3.*.1+.4 ) )*amp ),
