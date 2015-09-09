@@ -827,9 +827,14 @@ Nightbird.prototype.load = function( _ab ){
 	function step(){
 
 		var nodeData = objs.nodes[i];
-		var nodeLength = get32( offset ); offset += 4;
+		var nodeLength = get32( offset );
+		offset += 4;
+
 		var nodeAb = new ArrayBuffer( nodeLength );
-		nodeArray.set( array.subarray( offset, offset+nodeLength ) ); offset += nodeLength;
+		var nodeArray = new Uint8Array( nodeAb );
+		nodeArray.set( array.subarray( offset, offset+nodeLength ) );
+		offset += nodeLength;
+		
 		var node = null;
 
 		if( nodeData.kind === 'ShaderNode' ){
@@ -841,7 +846,6 @@ Nightbird.prototype.load = function( _ab ){
 		}else if( nodeData.kind === 'VideoNode' ){
 			var node = new Nightbird.VideoNode( it, nodeAb );
 		}else if( nodeData.kind === 'Node' ){
-			var nodeArray = new Uint8Array( nodeAb );
 			try{
 				eval( Nightbird.array2str( nodeArray ) );
 				if( Node ){
