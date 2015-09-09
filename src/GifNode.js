@@ -45,7 +45,7 @@ Nightbird.GifNode = function( _nightbird, _ab ){
 		contextMenu.onClick = function(){
 			it.nightbird.textbox = new Nightbird.Textbox( it.nightbird, it.cycle, function( _value ){
 				var value = Number( _value );
-				if( isNaN( value ) || value == 0 ){
+				if( isNaN( value ) || value === 0 ){
 					it.cycle = 'Auto';
 				}else{
 					it.cycle = Number( _value );
@@ -71,7 +71,7 @@ Nightbird.GifNode.prototype.loadGif = function( _ab ){
 	var offset = 0;
 	/* magic number 'GIF' */ offset += 3;
 	var gifVersion = getAscii( offset, 3 ); offset += 3;
-	if( gifVersion == '89a' ){
+	if( gifVersion === '89a' ){
 		it.gif.width = array[ offset ] + ( array[ offset+1 ]<<8 ); offset += 2;
 		it.gif.height = array[ offset ] + ( array[ offset+1 ]<<8 ); offset += 2;
 		var gctFlag = array[ offset ]>>>7;
@@ -83,43 +83,43 @@ Nightbird.GifNode.prototype.loadGif = function( _ab ){
 
 		var i = 0;
 		dataIndex[ i ] = offset;
-		while( array[ offset ] != 0x3b ){
+		while( array[ offset ] !== 0x3b ){
 
-			if( array[ offset ] == 0x21 && array[ offset+1 ] == 0xff ){ // Application Extension
+			if( array[ offset ] === 0x21 && array[ offset+1 ] === 0xff ){ // Application Extension
 				/* extIntro - appAuth */ offset += 14;
-				while( array[ offset ] != 0x00 ){
+				while( array[ offset ] !== 0x00 ){
 					offset += 1+array[ offset ];
 				}
 				/* terminator */ offset ++;
-			}else if( array[ offset ] == 0x21 && array[ offset+1 ] == 0xfe ){ // Comment Extension
+			}else if( array[ offset ] === 0x21 && array[ offset+1 ] === 0xfe ){ // Comment Extension
 				/* extIntro, extLabel */ offset += 2;
-				while( array[ offset ] != 0x00 ){
+				while( array[ offset ] !== 0x00 ){
 					offset += 1+array[ offset ];
 				}
 				/* terminator */ offset ++;
-			}else if( array[ offset ] == 0x21 && array[ offset+1 ] == 0x01 ){ // Plain Text Extension
+			}else if( array[ offset ] === 0x21 && array[ offset+1 ] === 0x01 ){ // Plain Text Extension
 				/* extIntro - TextBGColorIndex */ offset += 15;
-				while( array[ offset ] != 0x00 ){
+				while( array[ offset ] !== 0x00 ){
 					offset += 1+array[ offset ];
 				}
 				/* terminator */ offset ++;
-			}else if( array[ offset ] == 0x21 && array[ offset+1 ] == 0xf9 ){ // Graphic Control Extension
+			}else if( array[ offset ] === 0x21 && array[ offset+1 ] === 0xf9 ){ // Graphic Control Extension
 				/* Graphic Control Extension - bifFlags */ offset += 4;
 				if( !it.gif.delay ){
 					it.gif.delay = array[ offset ] + ( array[ offset+1 ]<<8 );
-					if( it.gif.delay == 0 ){
+					if( it.gif.delay === 0 ){
 						it.gif.delay = 5;
 					}
 				}
 				offset += 2;
 				/* transparentIndex, terminator */ offset += 2;
-			}else if( array[ offset ] == 0x2c ){ // Image Block
+			}else if( array[ offset ] === 0x2c ){ // Image Block
 				/* Image Block Separator to Image Height */ offset += 9;
 				var lctFlag = ( array[ offset ]>>>7 );
 				var lctSize = Math.pow( 2, ( array[ offset ]&7 )+1 ); offset ++;
 				/* lct */ if( lctFlag ){ offset += lctSize*3; }
 				/* lzwMin */ offset ++;
-				while( array[ offset ] != 0x00 ){
+				while( array[ offset ] !== 0x00 ){
 					offset += 1+array[ offset ];
 				}
 				/* terminator */ offset ++;
@@ -190,7 +190,7 @@ Nightbird.GifNode.prototype.draw = function(){
 	if( it.active ){
 
 		var frame = 0;
-		if( it.cycle == 'Auto' ){ frame = Math.floor( ( it.nightbird.time*100/it.gif.delay )%it.gif.length ); }
+		if( it.cycle === 'Auto' ){ frame = Math.floor( ( it.nightbird.time*100/it.gif.delay )%it.gif.length ); }
 		else{ frame = Math.floor( ( (it.frame/it.cycle)%1 )*it.gif.length ); }
 
 		if( it.frames[ frame ] ){

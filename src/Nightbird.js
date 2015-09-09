@@ -570,7 +570,7 @@ Nightbird.prototype.mousemove = function( _e ){
 	if( it.grabNode ){
 		for( var i=0; i<it.targets.length; i++ ){
 			var target = it.targets[i];
-			if( target != it.grabNode ){
+			if( target !== it.grabNode ){
 				var deltaX = it.mouseX-it.grabOffsetX-it.grabNode.posX;
 				var deltaY = it.mouseY-it.grabOffsetY-it.grabNode.posY;
 				target.move( target.posX+deltaX, target.posY+deltaY );
@@ -621,7 +621,7 @@ Nightbird.prototype.keydown = function( _e ){
 		it.contextMenus = [];
 	}
 
-	if( document.activeElement != document.body ){ return; }
+	if( document.activeElement !== document.body ){ return; }
 
 	if( 0 < it.contextMenus.length ){
 		if( k === 13 ){
@@ -691,7 +691,7 @@ Nightbird.prototype.loadFiles = function( _files ){
 				}else if( ext === 'js' ){
 					try{
 						var array = new Uint8Array( ab );
-						eval( Nightbird.array2str( array ) );
+						eval( Nightbird.arrayToString( array ) );
 						if( Node ){
 							node = new Node( it );
 						}
@@ -765,7 +765,7 @@ Nightbird.prototype.save = function( _nodes ){
 		var link = it.links[i];
 		var startNode = nodes.indexOf( link.start.node );
 		var endNode = nodes.indexOf( link.end.node );
-		if( startNode != -1 && endNode != -1 ){
+		if( startNode !== -1 && endNode !== -1 ){
 			var linkData = {};
 			linkData.startNode = startNode;
 			linkData.startConnector = nodes[startNode].outputs.indexOf( link.start );
@@ -776,7 +776,7 @@ Nightbird.prototype.save = function( _nodes ){
 	}
 
 	var json = JSON.stringify( objs );
-	var jsonArray = Nightbird.str2array( json );
+	var jsonArray = Nightbird.stringToArray( json );
 	abLength += 4+jsonArray.length;
 
 	var ab = new ArrayBuffer( abLength );
@@ -815,7 +815,7 @@ Nightbird.prototype.load = function( _ab ){
 	var array = new Uint8Array( ab );
 	var offset = 0;
 	var jsonLength = get32( offset ); offset += 4;
-	var json = Nightbird.array2str( array.subarray( offset, offset+jsonLength ) ); offset += jsonLength;
+	var json = Nightbird.arrayToString( array.subarray( offset, offset+jsonLength ) ); offset += jsonLength;
 	var objs = JSON.parse( json );
 
 	var beginIndex = it.nodes.length;
@@ -834,7 +834,7 @@ Nightbird.prototype.load = function( _ab ){
 		var nodeArray = new Uint8Array( nodeAb );
 		nodeArray.set( array.subarray( offset, offset+nodeLength ) );
 		offset += nodeLength;
-		
+
 		var node = null;
 
 		if( nodeData.kind === 'ShaderNode' ){
@@ -847,7 +847,7 @@ Nightbird.prototype.load = function( _ab ){
 			var node = new Nightbird.VideoNode( it, nodeAb );
 		}else if( nodeData.kind === 'Node' ){
 			try{
-				eval( Nightbird.array2str( nodeArray ) );
+				eval( Nightbird.arrayToString( nodeArray ) );
 				if( Node ){
 					node = new Node( it );
 				}
@@ -922,7 +922,7 @@ Nightbird.prototype.draw = function(){
 
 	for( var node of it.nodes ){
 		node.draw();
-		if( it.targets.indexOf( node ) != -1 ){
+		if( it.targets.indexOf( node ) !== -1 ){
 			node.drawTarget();
 		}
 	}

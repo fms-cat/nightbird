@@ -24,7 +24,7 @@ Nightbird.Textbox = function( _nightbird, _default, _onEnter ){
 
 		var k = _e.keyCode;
 
-		if( k == 13 ){
+		if( k === 13 ){
 			it.onEnter( it.input.value );
 			it.remove();
 		}

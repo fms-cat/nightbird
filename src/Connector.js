@@ -69,7 +69,7 @@ Nightbird.Connector.prototype.draw = function(){
 		case 'string' : col = '#fa0'; break;
 	}
 	if( 0 < it.nightbird.grabLinks.length ){
-		if( it.nightbird.grabLinks[0].type == it.type && ( it.nightbird.grabLinks[0].grabEnd ^ it.isOutput ) ){
+		if( it.nightbird.grabLinks[0].type === it.type && ( it.nightbird.grabLinks[0].grabEnd ^ it.isOutput ) ){
 		}else{
 			col = col.replace( 'f', '8' );
 			col = col.replace( 'a', '5' );
@@ -82,7 +82,7 @@ Nightbird.Connector.prototype.draw = function(){
 	it.nightbird.modularContext.strokeStyle = '#000';
 	it.nightbird.modularContext.stroke();
 
-	if( it.links.length == 0 ){
+	if( it.links.length === 0 ){
 		it.nightbird.modularContext.textAlign = it.isOutput ? 'left' : 'right';
 		it.nightbird.modularContext.textBaseline = 'middle';
 		it.nightbird.modularContext.fillStyle = '#ddd';

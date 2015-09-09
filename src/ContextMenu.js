@@ -36,7 +36,7 @@ Nightbird.ContextMenu.prototype.draw = function(){
 
 	it.nightbird.modularContext.fillStyle = '#aaa';
 	it.nightbird.modularContext.fillRect( it.posX, it.posY, it.width, it.height );
-	if( it.nightbird.selectContextMenu == it ){
+	if( it.nightbird.selectContextMenu === it ){
 		it.nightbird.modularContext.fillStyle = '#444';
 		it.nightbird.modularContext.fillRect( it.posX+2, it.posY+2, it.width-4, it.height-4 );
 		it.nightbird.modularContext.fillStyle = '#aaa';

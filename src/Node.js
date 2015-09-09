@@ -52,7 +52,7 @@ Nightbird.Node.prototype.move = function( _x, _y ){
 
 	var it = this;
 
-	if( typeof _x == 'number' && typeof _y == 'number' ){
+	if( typeof _x === 'number' && typeof _y === 'number' ){
 		it.posX = _x;
 		it.posY = _y;
 	}

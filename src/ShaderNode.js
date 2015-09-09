@@ -46,7 +46,7 @@ Nightbird.ShaderNode = function( _nightbird, _ab ){
 	it.textures = [];
 	it.params = [];
 
-	it.loadGlsl( _ab );
+	it.loadFrag( _ab );
 
 	var outputCanvas = new Nightbird.Connector( it, true, 'canvas' );
 	outputCanvas.setName( 'output' );
@@ -104,14 +104,14 @@ Nightbird.ShaderNode.prototype.setTime = function( _t ){
 
 };
 
-Nightbird.ShaderNode.prototype.loadGlsl = function( _ab ){
+Nightbird.ShaderNode.prototype.loadFrag = function( _ab ){
 
 	var it = this;
 
 	var gl = it.gl;
 
 	var array = new Uint8Array( _ab );
-	var code = Nightbird.array2str( array );
+	var code = Nightbird.arrayToString( array );
 
 	it.setProgram( code, name );
 
