@@ -36,6 +36,8 @@ var Nightbird = function( _w, _h ){
 	it.modular.height = 512;
 	it.modularContext = it.modular.getContext( '2d' );
 
+	it.shaderMother = new Nightbird.ShaderMother( it );
+
 	it.master = new Nightbird.MasterNode( it );
 	it.nodes.push( it.master );
 	it.master.move( 256, 256 );
